@@ -6,9 +6,10 @@ import AddShoppingCartIcon from '@material-ui/icons/AddShoppingCart';
 import { useState } from 'react';
 import { useQuery } from 'react-query';
 
-import { StyledButton, Wrapper } from './Store.styles';
+import { Nav, Span, StyledButton, Wrapper } from './Store.styles';
 import Cart from '../components/Cart';
 import Item from '../components/Item';
+import { Link } from 'react-router-dom';
 
 export type CartItemType = {
   id: number;
@@ -68,27 +69,37 @@ function App() {
   if (error) return <div>Something went wrong ...</div>;
 
   return (
-    <Wrapper>
-      <Drawer anchor='right' open={cartOpen} onClose={() => setCartOpen(false)}>
-        <Cart
-          cartItems={cartItems}
-          addToCart={handleAddToCart}
-          removeFromCart={handleRemoveFromCart}
-        />
-      </Drawer>
-      <StyledButton onClick={() => setCartOpen(true)}>
-        <Badge badgeContent={getTotalItems(cartItems)} color='error'>
-          <AddShoppingCartIcon />
-        </Badge>
-      </StyledButton>
-      <Grid container spacing={3}>
-        {data?.map((item) => (
-          <Grid item key={item.id} xs={12} sm={4}>
-            <Item item={item} handleAddToCart={handleAddToCart} />
-          </Grid>
-        ))}
-      </Grid>
-    </Wrapper>
+    <div>
+      <Nav>
+        <StyledButton onClick={() => setCartOpen(true)}>
+          <Badge badgeContent={getTotalItems(cartItems)} color='error'>
+            <AddShoppingCartIcon />
+          </Badge>
+        </StyledButton>
+        <Link to='/'>
+          <Span>HOME</Span>
+        </Link>
+      </Nav>
+      <Wrapper>
+        <Drawer
+          anchor='right'
+          open={cartOpen}
+          onClose={() => setCartOpen(false)}>
+          <Cart
+            cartItems={cartItems}
+            addToCart={handleAddToCart}
+            removeFromCart={handleRemoveFromCart}
+          />
+        </Drawer>
+        <Grid container spacing={3}>
+          {data?.map((item) => (
+            <Grid item key={item.id} xs={12} sm={4}>
+              <Item item={item} handleAddToCart={handleAddToCart} />
+            </Grid>
+          ))}
+        </Grid>
+      </Wrapper>
+    </div>
   );
 }
 
