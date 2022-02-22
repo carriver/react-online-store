@@ -1,8 +1,8 @@
-import React from "react";
+import React from 'react';
 
-import { CartItemType } from "../App";
-import Wrapper from "./Cart.styles";
-import CartItem from "./CartItem";
+import { CartItemType } from '../pages/Store';
+import Wrapper from './Cart.styles';
+import CartItem from './CartItem';
 
 type Props = {
   cartItems: CartItemType[];
