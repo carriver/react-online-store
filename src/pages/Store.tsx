@@ -22,7 +22,7 @@ export type CartItemType = {
 };
 
 const getProducts = async (): Promise<CartItemType[]> =>
-  (await fetch('https://fakestoreapi.com/products')).json();
+  await (await fetch('https://fakestoreapi.com/products')).json();
 
 function App() {
   const [cartOpen, setCartOpen] = useState(false);
@@ -31,7 +31,7 @@ function App() {
     'products',
     getProducts,
   );
-  console.log(data);
+  // console.log(data);
 
   const getTotalItems = (items: CartItemType[]) =>
     items.reduce((ack: number, item) => ack + item.amount, 0);

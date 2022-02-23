@@ -9,10 +9,10 @@ export const Nav = styled.div`
 
 export const Span = styled(IconButton)`
   display: block;
-  padding: 25 15px;
+  padding: 15px 15px;
   float: right;
   text-align: center;
-
+  margin-top: 10px;
   &:hover {
     text-decoration: underline;
   }
@@ -20,7 +20,7 @@ export const Span = styled(IconButton)`
 
 export const StyledButton = styled(IconButton)`
   display: block;
-  padding: 25 15px;
+  padding: 15px 15px;
   float: right;
   text-align: center;
 `;

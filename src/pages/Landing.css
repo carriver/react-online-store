@@ -1,0 +1,68 @@
+.main {
+  background-color: #fff;
+  width: 50vw;
+  margin: 4rem auto;
+  text-align: center;
+  padding: 50px;
+  margin-top: 60px;
+}
+
+h1 {
+  font-weight: bold;
+  font-size: 25px;
+  text-align: center;
+  margin-top: 30px;
+  margin-bottom: 50px;
+}
+
+.main-button {
+  width: 100%;
+  max-width: 500px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  cursor: pointer;
+  outline: none;
+  margin-bottom: 30px;
+}
+
+button,
+button span {
+  border-radius: 25px;
+}
+
+button {
+  background-color: #fff;
+  border: solid 1px black;
+  font-weight: bold;
+}
+
+button span {
+  display: block;
+  padding: 0.4em 0.2em;
+  transition: all 0.1s linear;
+  font-size: 16px;
+  text-decoration: none;
+}
+
+button:hover {
+  background: #848484;
+}
+
+button:active span {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+button span:focus {
+  outline: 1px;
+}
+
+button:disabled {
+  opacity: 0.5;
+}
+
+a,
+a:visited,
+a:active {
+  color: #000000;
+  text-decoration: none;
+}
