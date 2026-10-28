@@ -1,12 +1,12 @@
 import { Badge, CircularProgress, Drawer, Grid } from '@mui/material';
 import { AddShoppingCart as AddShoppingCartIcon } from '@mui/icons-material';
 import { useState } from 'react';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 
 import { Nav, Span, StyledButton, Wrapper } from './Store.styles';
 import Cart from '../components/Cart';
 import Item from '../components/Item';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 
 export type CartItemType = {
   id: number;
@@ -24,10 +24,10 @@ const getProducts = async (): Promise<CartItemType[]> =>
 function App() {
   const [cartOpen, setCartOpen] = useState(false);
   const [cartItems, setCartItems] = useState([] as CartItemType[]);
-  const { data, isLoading, error } = useQuery<CartItemType[]>(
-    'products',
-    getProducts,
-  );
+  const { data, isPending, error } = useQuery({
+    queryKey: ['products'],
+    queryFn: getProducts,
+  });
   // console.log(data);
 
   const getTotalItems = (items: CartItemType[]) =>
@@ -62,7 +62,7 @@ function App() {
     );
   };
 
-  if (isLoading) return <CircularProgress />;
+  if (isPending) return <CircularProgress />;
   if (error) return <div>Something went wrong ...</div>;
 
   return (
