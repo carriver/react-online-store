@@ -9,8 +9,13 @@ import Item from '../components/Item';
 import { addToCart, countItems, removeOneFromCart, type CartItemType, type Product } from '../cart';
 import { Link } from 'react-router';
 
-const getProducts = async (): Promise<Product[]> =>
-  await (await fetch('https://fakestoreapi.com/products')).json();
+const PRODUCTS_URL = 'https://fakestoreapi.com/products';
+
+async function getProducts(): Promise<Product[]> {
+  const response = await fetch(PRODUCTS_URL);
+  if (!response.ok) throw new Error(`Product request failed with HTTP ${response.status}`);
+  return response.json();
+}
 
 function Store() {
   const [cartOpen, setCartOpen] = useState(false);
@@ -24,7 +29,10 @@ function Store() {
     setCartItems((items) => removeOneFromCart(items, productId));
 
   if (isPending) return <CircularProgress />;
-  if (error) return <div>Something went wrong ...</div>;
+  if (error) {
+    console.error(error);
+    return <div role='alert'>Something went wrong loading the products. Please try again later.</div>;
+  }
 
   return (
     <div>
