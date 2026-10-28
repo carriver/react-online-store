@@ -1,12 +1,12 @@
 import { Button } from '@mui/material';
 import React from 'react';
 
-import { CartItemType } from '../pages/Store';
+import type { CartItemType, Product } from '../cart';
 import Wrapper from './CartItem.styles';
 
 type Props = {
   item: CartItemType;
-  addToCart: (clickedItem: CartItemType) => void;
+  addToCart: (product: Product) => void;
   removeFromCart: (id: number) => void;
 };
 

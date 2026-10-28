@@ -6,61 +6,22 @@ import { useQuery } from '@tanstack/react-query';
 import { Nav, Span, StyledButton, Wrapper } from './Store.styles';
 import Cart from '../components/Cart';
 import Item from '../components/Item';
+import { addToCart, countItems, removeOneFromCart, type CartItemType, type Product } from '../cart';
 import { Link } from 'react-router';
 
-export type CartItemType = {
-  id: number;
-  category: string;
-  description: string;
-  image: string;
-  price: number;
-  title: string;
-  amount: number;
-};
-
-const getProducts = async (): Promise<CartItemType[]> =>
+const getProducts = async (): Promise<Product[]> =>
   await (await fetch('https://fakestoreapi.com/products')).json();
 
-function App() {
+function Store() {
   const [cartOpen, setCartOpen] = useState(false);
-  const [cartItems, setCartItems] = useState([] as CartItemType[]);
+  const [cartItems, setCartItems] = useState<CartItemType[]>([]);
   const { data, isPending, error } = useQuery({
     queryKey: ['products'],
     queryFn: getProducts,
   });
-  // console.log(data);
-
-  const getTotalItems = (items: CartItemType[]) =>
-    items.reduce((ack: number, item) => ack + item.amount, 0);
-
-  const handleAddToCart = (clickedItem: CartItemType) => {
-    setCartItems((prev) => {
-      // 1. Is the item already added in the cart?
-      const isItemInCart = prev.find((item) => item.id === clickedItem.id);
-
-      if (isItemInCart) {
-        return prev.map((item) =>
-          item.id === clickedItem.id
-            ? { ...item, amount: item.amount + 1 }
-            : item,
-        );
-      }
-      // First time the item is added
-      return [...prev, { ...clickedItem, amount: 1 }];
-    });
-  };
-
-  const handleRemoveFromCart = (id: number) => {
-    setCartItems((prev) =>
-      prev.reduce((ack, item) => {
-        if (item.id === id) {
-          if (item.amount === 1) return ack;
-          return [...ack, { ...item, amount: item.amount - 1 }];
-        }
-        return [...ack, item];
-      }, [] as CartItemType[]),
-    );
-  };
+  const handleAddToCart = (product: Product) => setCartItems((items) => addToCart(items, product));
+  const handleRemoveFromCart = (productId: number) =>
+    setCartItems((items) => removeOneFromCart(items, productId));
 
   if (isPending) return <CircularProgress />;
   if (error) return <div>Something went wrong ...</div>;
@@ -69,7 +30,7 @@ function App() {
     <div>
       <Nav>
         <StyledButton onClick={() => setCartOpen(true)}>
-          <Badge badgeContent={getTotalItems(cartItems)} color='error'>
+          <Badge badgeContent={countItems(cartItems)} color='error'>
             <AddShoppingCartIcon />
           </Badge>
         </StyledButton>
@@ -100,4 +61,4 @@ function App() {
   );
 }
 
-export default App;
+export default Store;
