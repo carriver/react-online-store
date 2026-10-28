@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect x="9" y="11" width="46" height="46" rx="12" fill="#2a1a12" transform="rotate(-6 34 36)"/>
+  <rect x="6" y="7" width="46" height="46" rx="12" fill="#ff5a36" stroke="#2a1a12" stroke-width="3.5" transform="rotate(-6 29 30)"/>
+  <text x="29" y="38" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="22" fill="#2a1a12" transform="rotate(-6 29 30)">FS</text>
+</svg>
