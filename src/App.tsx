@@ -1,14 +1,19 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router';
+
 import Landing from './pages/Landing';
-import Store from './pages/Store';
+
+const Store = lazy(() => import('./pages/Store'));
 
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path='/' element={<Landing />} />
-        <Route path='/store/*' element={<Store />} />
-      </Routes>
+      <Suspense fallback={null}>
+        <Routes>
+          <Route path='/' element={<Landing />} />
+          <Route path='/store/*' element={<Store />} />
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   );
 }

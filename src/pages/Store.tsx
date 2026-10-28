@@ -1,71 +1,103 @@
-import { Badge, CircularProgress, Drawer, Grid } from '@mui/material';
-import { AddShoppingCart as AddShoppingCartIcon } from '@mui/icons-material';
-import { useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router';
 
-import { Nav, Span, StyledButton, Wrapper } from './Store.styles';
-import Cart from '../components/Cart';
-import Item from '../components/Item';
-import { addToCart, countItems, removeOneFromCart, type CartItemType, type Product } from '../cart';
-import { Link } from 'react-router';
+import { productsQuery } from '../api';
+import CartSheet from '../components/CartSheet';
+import Hud from '../components/Hud';
+import PerksSheet from '../components/PerksSheet';
+import ReceiptSheet from '../components/ReceiptSheet';
+import WelcomeBack from '../components/WelcomeBack';
+import { GameProvider, useGame, useGameSelector } from '../game/GameProvider';
+import './Store.css';
 
-const PRODUCTS_URL = 'https://fakestoreapi.com/products';
+const loadRoom = () => import('../room/RoomMode');
+const loadMachine = () => import('../machine/MachineMode');
+const RoomMode = lazy(loadRoom);
+const MachineMode = lazy(loadMachine);
 
-async function getProducts(): Promise<Product[]> {
-  const response = await fetch(PRODUCTS_URL);
-  if (!response.ok) throw new Error(`Product request failed with HTTP ${response.status}`);
-  return response.json();
+function StockingShelves() {
+  return (
+    <div className='stocking' role='status'>
+      <span className='stocking__boxes' aria-hidden='true'>
+        <i />
+        <i />
+        <i />
+      </span>
+      Stocking the shelves…
+    </div>
+  );
+}
+
+function useModeFromLink() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { dispatch } = useGame();
+  const requested = searchParams.get('mode');
+
+  useEffect(() => {
+    if (requested !== 'room' && requested !== 'machine') return;
+    dispatch({ type: 'setMode', mode: requested });
+    setSearchParams({}, { replace: true });
+  }, [requested, dispatch, setSearchParams]);
+}
+
+function StoreFloor() {
+  const { data: products, isPending, error } = useQuery(productsQuery);
+  const mode = useGameSelector((state) => state.mode);
+  const [cartOpen, setCartOpen] = useState(false);
+  const [perksOpen, setPerksOpen] = useState(false);
+  useModeFromLink();
+
+  useEffect(() => {
+    // Warm the other mode in the background so the toggle switches instantly.
+    const warm = () => void (mode === 'room' ? loadMachine() : loadRoom());
+    const idle = window.requestIdleCallback?.(warm) ?? window.setTimeout(warm, 1500);
+    return () => (window.cancelIdleCallback ? window.cancelIdleCallback(idle) : window.clearTimeout(idle));
+  }, [mode]);
+
+  useEffect(() => {
+    if (error) console.error(error);
+  }, [error]);
+
+  const openPerks = () => {
+    setCartOpen(false);
+    setPerksOpen(true);
+  };
+
+  return (
+    <div className='store'>
+      <a className='skip-link' href='#store-main'>
+        Skip to the store
+      </a>
+      <Hud onOpenCart={() => setCartOpen(true)} onOpenPerks={openPerks} />
+      <main id='store-main' className='store__main'>
+        {isPending ? (
+          <StockingShelves />
+        ) : error || !products ? (
+          <div role='alert' className='store__error'>
+            Something went wrong loading the products. Please try again later.
+          </div>
+        ) : (
+          <Suspense fallback={<StockingShelves />}>
+            <div key={mode} className='store__mode'>
+              {mode === 'room' ? <RoomMode products={products} /> : <MachineMode products={products} onOpenCart={() => setCartOpen(true)} />}
+            </div>
+          </Suspense>
+        )}
+      </main>
+      <CartSheet open={cartOpen} onClose={() => setCartOpen(false)} onOpenPerks={openPerks} />
+      <PerksSheet open={perksOpen} onClose={() => setPerksOpen(false)} />
+      <ReceiptSheet />
+      <WelcomeBack />
+    </div>
+  );
 }
 
 function Store() {
-  const [cartOpen, setCartOpen] = useState(false);
-  const [cartItems, setCartItems] = useState<CartItemType[]>([]);
-  const { data, isPending, error } = useQuery({
-    queryKey: ['products'],
-    queryFn: getProducts,
-  });
-  const handleAddToCart = (product: Product) => setCartItems((items) => addToCart(items, product));
-  const handleRemoveFromCart = (productId: number) =>
-    setCartItems((items) => removeOneFromCart(items, productId));
-
-  if (isPending) return <CircularProgress />;
-  if (error) {
-    console.error(error);
-    return <div role='alert'>Something went wrong loading the products. Please try again later.</div>;
-  }
-
   return (
-    <div>
-      <Nav>
-        <StyledButton onClick={() => setCartOpen(true)}>
-          <Badge badgeContent={countItems(cartItems)} color='error'>
-            <AddShoppingCartIcon />
-          </Badge>
-        </StyledButton>
-        <Link to='/'>
-          <Span>HOME</Span>
-        </Link>
-      </Nav>
-      <Wrapper>
-        <Drawer
-          anchor='right'
-          open={cartOpen}
-          onClose={() => setCartOpen(false)}>
-          <Cart
-            cartItems={cartItems}
-            addToCart={handleAddToCart}
-            removeFromCart={handleRemoveFromCart}
-          />
-        </Drawer>
-        <Grid container spacing={3}>
-          {data?.map((item) => (
-            <Grid key={item.id} size={{ xs: 12, sm: 4 }}>
-              <Item item={item} handleAddToCart={handleAddToCart} />
-            </Grid>
-          ))}
-        </Grid>
-      </Wrapper>
-    </div>
+    <GameProvider>
+      <StoreFloor />
+    </GameProvider>
   );
 }
 

@@ -1,0 +1,241 @@
+.hud {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: auto auto 1fr auto auto;
+  grid-template-areas: 'brand coins toggle sound actions';
+  align-items: center;
+  gap: 12px 18px;
+  padding: 12px clamp(16px, 3vw, 32px);
+  background: color-mix(in srgb, var(--paper) 88%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: var(--stroke) solid var(--line);
+}
+
+.hud__brand {
+  grid-area: brand;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  font-weight: 800;
+  font-size: 1.2rem;
+  letter-spacing: -0.03em;
+}
+
+.hud__logo {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: var(--stroke) solid var(--line);
+  border-radius: 12px;
+  background: var(--tomato);
+  color: #2a1a12;
+  font-size: 1rem;
+  box-shadow: 3px 3px 0 var(--line);
+  transform: rotate(-6deg);
+  transition: transform 300ms var(--ease-spring);
+}
+
+.hud__brand:hover .hud__logo {
+  transform: rotate(6deg) scale(1.08);
+}
+
+.coin-counter {
+  grid-area: coins;
+  display: inline-grid;
+  grid-template-columns: auto auto;
+  grid-template-rows: auto auto;
+  column-gap: 8px;
+  align-items: center;
+  padding: 4px 16px 4px 10px;
+  border: var(--stroke) solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: 3px 3px 0 var(--line);
+  min-width: 150px;
+}
+
+.coin-counter .coin-icon {
+  grid-row: span 2;
+  width: 30px;
+  height: 30px;
+}
+
+.coin-counter__value {
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.coin-counter__rate {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.mode-toggle {
+  grid-area: toggle;
+  position: relative;
+  justify-self: center;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 4px;
+  border: var(--stroke) solid var(--line);
+  border-radius: 999px;
+  background: var(--paper-deep);
+  box-shadow: inset 2px 2px 0 rgb(0 0 0 / 0.08);
+}
+
+.mode-toggle__pill {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc(50% - 4px);
+  border: var(--stroke) solid var(--line);
+  border-radius: 999px;
+  background: var(--tomato);
+  box-shadow: 2px 2px 0 var(--line);
+  transition: transform 380ms var(--ease-spring), background-color 300ms;
+}
+
+.mode-toggle[data-mode='machine'] .mode-toggle__pill {
+  transform: translateX(100%);
+  background: var(--mint);
+}
+
+.mode-toggle__option {
+  position: relative;
+  z-index: 1;
+  min-height: 40px;
+  padding: 6px 18px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  font-weight: 800;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 250ms;
+}
+
+.mode-toggle__option[aria-pressed='true'] {
+  color: #2a1a12;
+}
+
+.hud__actions {
+  grid-area: actions;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hud__icon-button {
+  grid-area: sound;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: var(--stroke) solid var(--line);
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: 3px 3px 0 var(--line);
+  cursor: pointer;
+}
+
+.hud__icon-button svg {
+  width: 22px;
+  height: 22px;
+}
+
+.hud__perks-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.hud__cart {
+  position: relative;
+  padding-inline: 14px 20px;
+}
+
+.hud__cart svg {
+  width: 24px;
+  height: 24px;
+}
+
+.hud__badge {
+  display: grid;
+  place-items: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 6px;
+  border: var(--stroke) solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+  animation: badge-bump 420ms var(--ease-spring);
+}
+
+@keyframes badge-bump {
+  40% {
+    transform: scale(1.35) rotate(-8deg);
+  }
+}
+
+@media (max-width: 860px) {
+  .hud {
+    grid-template-columns: auto 1fr auto auto;
+    grid-template-areas:
+      'brand coins actions actions'
+      'toggle toggle toggle sound';
+    gap: 10px;
+    padding: 10px 16px;
+  }
+
+  .hud__name {
+    display: none;
+  }
+
+  .coin-counter {
+    justify-self: start;
+    min-width: 0;
+  }
+
+  .mode-toggle {
+    justify-self: stretch;
+  }
+
+  .hud__perks {
+    padding-inline: 12px;
+  }
+}
+
+@media (max-width: 420px) {
+  .hud__perks {
+    font-size: 0;
+    gap: 0;
+    width: 44px;
+    padding: 0;
+  }
+
+  .hud__perks-icon {
+    width: 22px;
+    height: 22px;
+  }
+
+  .hud__actions {
+    gap: 8px;
+  }
+
+  .hud__icon-button {
+    width: 40px;
+    height: 40px;
+  }
+}

@@ -1,0 +1,118 @@
+.receipt-slot {
+  position: relative;
+  z-index: 2;
+  height: 14px;
+  margin: 0 -6px;
+  border: 2px solid var(--line);
+  border-radius: 999px;
+  background: #241722;
+}
+
+.receipt {
+  --paper-roll: #fffdf6;
+  position: relative;
+  margin: -7px 10px 0;
+  padding: 22px 18px 26px;
+  background: var(--paper-roll);
+  color: #2b2b2b;
+  font-family: var(--font-receipt);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  filter: drop-shadow(3px 4px 0 rgb(0 0 0 / 0.18));
+  mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / 14px 100%;
+  animation: receipt-print 1.4s steps(14) both;
+}
+
+.receipt__head {
+  display: grid;
+  gap: 2px;
+  text-align: center;
+}
+
+.receipt__store {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.receipt__items,
+.receipt__totals {
+  display: grid;
+  gap: 4px;
+  margin: 14px 0 0;
+  padding: 14px 0 0;
+  border-top: 2px dashed #9a9a9a;
+  list-style: none;
+}
+
+.receipt__items li,
+.receipt__totals p {
+  display: flex;
+  min-width: 0;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.receipt__items li span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.receipt__items li span:last-child,
+.receipt__totals span:last-child {
+  flex: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.receipt__total {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.receipt__stamps {
+  margin-top: 14px;
+  padding: 10px;
+  border: 2px dashed #9a9a9a;
+  text-align: center;
+}
+
+.receipt__stamps span {
+  color: #d9401f;
+  font-size: 1.2rem;
+  letter-spacing: 2px;
+}
+
+.receipt__barcode {
+  display: block;
+  width: 70%;
+  height: 46px;
+  margin: 16px auto 0;
+  fill: #222;
+}
+
+.receipt__foot {
+  margin-top: 6px;
+  text-align: center;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.receipt__done {
+  width: 100%;
+  margin-top: 18px;
+}
+
+@keyframes receipt-print {
+  from {
+    clip-path: inset(0 0 100% 0);
+    transform: translateY(-40px);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+    transform: none;
+  }
+}

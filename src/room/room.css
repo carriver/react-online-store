@@ -1,0 +1,504 @@
+.room-mode {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 380px);
+  gap: 24px;
+  align-items: start;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 24px clamp(16px, 3vw, 32px) 40px;
+}
+
+.room-mode__stage {
+  display: grid;
+  gap: 12px;
+}
+
+.room-mode__hint {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-soft);
+  text-align: center;
+}
+
+.room-mode .catalog {
+  position: sticky;
+  top: 92px;
+  max-height: calc(100dvh - 116px);
+}
+
+.room-scene {
+  position: relative;
+  aspect-ratio: 800 / 560;
+  container-type: inline-size;
+  border: var(--stroke) solid var(--line);
+  border-radius: 28px;
+  box-shadow: 8px 8px 0 var(--line);
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--wall);
+}
+
+.room-backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.scene-wall {
+  fill: var(--wall);
+}
+
+.scene-wall-dot {
+  fill: var(--wall-dots);
+}
+
+.scene-floor {
+  fill: var(--floor);
+}
+
+.scene-floor-line {
+  stroke: var(--floor-line);
+  stroke-width: 3;
+}
+
+.scene-trim {
+  fill: var(--surface);
+  stroke: var(--line);
+  stroke-width: 3;
+}
+
+.scene-sky {
+  fill: var(--window-sky);
+}
+
+.scene-sun {
+  fill: var(--butter);
+}
+
+:root[data-theme='midnight'] .scene-sun {
+  fill: #fff3c4;
+}
+
+.scene-cloud {
+  fill: #fff;
+  opacity: 0.92;
+}
+
+.scene-clouds {
+  animation: clouds-drift 14s ease-in-out infinite alternate;
+}
+
+.scene-frame {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 5;
+}
+
+.scene-wood {
+  fill: #c98a4b;
+  stroke: var(--line);
+  stroke-width: 3;
+}
+
+.scene-wood-dark {
+  fill: #a86d36;
+  stroke: var(--line);
+  stroke-width: 3;
+}
+
+.scene-sign-board {
+  fill: #2a1a12;
+  stroke: var(--line);
+  stroke-width: 3;
+}
+
+.scene-sign-text {
+  fill: #ff7a5c;
+  font-family: var(--font-display);
+  font-size: 25px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  filter: drop-shadow(0 0 5px #ff5a36);
+  animation: neon-flicker 6s steps(1) infinite;
+}
+
+.scene-wire {
+  stroke: var(--line);
+  stroke-width: 2;
+}
+
+.scene-metal {
+  stroke: #7c7f8e;
+  stroke-width: 7;
+  stroke-linecap: round;
+}
+
+.scene-metal--bar {
+  stroke-width: 9;
+}
+
+.scene-wheel {
+  fill: var(--line);
+}
+
+.scene-leaf {
+  fill: var(--mint);
+  stroke: var(--line);
+  stroke-width: 3;
+  transform-box: fill-box;
+  transform-origin: bottom center;
+  animation: leaf-sway 5s ease-in-out infinite alternate;
+}
+
+.scene-leaf--dark {
+  fill: color-mix(in srgb, var(--mint) 70%, black);
+  animation-delay: -2s;
+}
+
+.scene-pot {
+  fill: var(--tomato);
+  stroke: var(--line);
+  stroke-width: 3;
+}
+
+.scene-rug {
+  fill: var(--butter);
+  stroke: var(--line);
+  stroke-width: 3;
+}
+
+.scene-rug-stripe {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 2;
+  stroke-dasharray: 10 9;
+  opacity: 0.45;
+}
+
+.room-item,
+.room-ghost {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: 8.6cqi;
+  aspect-ratio: 4 / 5;
+  translate: -50% -100%;
+  rotate: var(--tilt);
+  margin: 0;
+}
+
+.room-item--rail,
+.room-ghost--rail {
+  width: 7.2cqi;
+  translate: -50% 1.6cqi;
+  transform-origin: 50% -1.6cqi;
+}
+
+.room-item--shelf,
+.room-ghost--shelf,
+.room-item--desk,
+.room-ghost--desk {
+  width: 6.8cqi;
+}
+
+.room-item {
+  z-index: 1;
+  padding: 0.5cqi;
+  border: 2px solid var(--line);
+  border-radius: 1.2cqi;
+  background: #fff;
+  box-shadow: 0.4cqi 0.4cqi 0 var(--line);
+  animation: room-drop 700ms var(--ease-spring) both;
+}
+
+.room-item--rail {
+  animation: room-drop 700ms var(--ease-spring) both, hanger-swing 4.5s ease-in-out var(--delay) infinite alternate;
+}
+
+.room-item--rail::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  width: 55%;
+  height: 1.6cqi;
+  translate: -50% 0;
+  border: 2px solid var(--line);
+  border-bottom: 0;
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+}
+
+.room-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.room-item__amount {
+  position: absolute;
+  right: -1.2cqi;
+  bottom: -1.2cqi;
+  display: grid;
+  place-items: center;
+  min-width: 3.4cqi;
+  height: 3.4cqi;
+  padding: 0 0.6cqi;
+  border: 2px solid var(--line);
+  border-radius: 999px;
+  background: var(--mint);
+  color: #10251a;
+  font-size: clamp(9px, 1.7cqi, 15px);
+  font-weight: 800;
+}
+
+.room-item__yield {
+  position: absolute;
+  left: 50%;
+  top: -0.5cqi;
+  translate: -50% 0;
+  color: #9a6a00;
+  font-size: clamp(9px, 1.7cqi, 15px);
+  font-weight: 800;
+  white-space: nowrap;
+  text-shadow: 1px 1px 0 #fff;
+  pointer-events: none;
+  opacity: 0;
+  animation: yield-float 3.2s var(--ease-out) var(--delay) infinite;
+}
+
+:root[data-theme='midnight'] .room-item__yield {
+  color: var(--butter);
+  text-shadow: 1px 1px 0 var(--line);
+}
+
+.room-ghost {
+  border: 2px dashed color-mix(in srgb, var(--line) 28%, transparent);
+  border-radius: 1.2cqi;
+}
+
+.mochi {
+  position: absolute;
+  left: 37.5%;
+  bottom: 3%;
+  z-index: 2;
+  width: 17cqi;
+  translate: -50% 0;
+}
+
+.mochi__bubble {
+  position: absolute;
+  left: 60%;
+  bottom: 92%;
+  width: max-content;
+  max-width: 30cqi;
+  padding: 0.9cqi 1.4cqi;
+  border: 2px solid var(--line);
+  border-radius: 1.8cqi 1.8cqi 1.8cqi 0.3cqi;
+  background: var(--surface);
+  box-shadow: 0.4cqi 0.4cqi 0 var(--line);
+  font-size: clamp(10px, 1.65cqi, 15px);
+  font-weight: 700;
+  line-height: 1.25;
+  animation: bubble-in 450ms var(--ease-spring) both;
+}
+
+.mochi__button {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mochi__button:focus-visible {
+  outline-offset: -4px;
+  border-radius: 40%;
+}
+
+.mochi__body {
+  display: block;
+  width: 100%;
+  overflow: visible;
+  transform-origin: 50% 100%;
+  animation: mochi-squish 480ms var(--ease-spring), mochi-breathe 3.6s ease-in-out 480ms infinite;
+}
+
+.mochi__button:hover .mochi__body {
+  filter: drop-shadow(0 0 0.8cqi color-mix(in srgb, var(--butter) 80%, transparent));
+}
+
+.mochi__fur {
+  fill: #fff7ec;
+  stroke: var(--line);
+  stroke-width: 3.5;
+  stroke-linejoin: round;
+}
+
+.mochi__ear-inner {
+  fill: #ffb2a6;
+}
+
+.mochi__eyes {
+  fill: var(--line);
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: mochi-blink 4.8s infinite;
+}
+
+.mochi__cheek {
+  fill: #ff9a8a;
+  opacity: 0.7;
+}
+
+.mochi__mouth {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.mochi__tail {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 7;
+  stroke-linecap: round;
+  transform-origin: 112px 92px;
+  animation: tail-wag 1.8s ease-in-out infinite alternate;
+}
+
+@keyframes room-drop {
+  0% {
+    opacity: 0;
+    transform: translateY(-60%) scale(0.5);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(6%) scale(1.06, 0.94);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+@keyframes hanger-swing {
+  from {
+    transform: rotate(-3deg);
+  }
+  to {
+    transform: rotate(3deg);
+  }
+}
+
+@keyframes yield-float {
+  0% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+  12% {
+    opacity: 1;
+  }
+  55% {
+    opacity: 0;
+    transform: translateY(-3.6cqi);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-3.6cqi);
+  }
+}
+
+@keyframes clouds-drift {
+  to {
+    transform: translateX(-60px);
+  }
+}
+
+@keyframes neon-flicker {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  91% {
+    opacity: 0.35;
+  }
+  93% {
+    opacity: 1;
+  }
+  95% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes leaf-sway {
+  to {
+    transform: rotate(4deg);
+  }
+}
+
+@keyframes mochi-breathe {
+  50% {
+    transform: scale(1.02, 0.97);
+  }
+}
+
+@keyframes mochi-squish {
+  0% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.18, 0.78);
+  }
+  65% {
+    transform: scale(0.92, 1.1);
+  }
+}
+
+@keyframes mochi-blink {
+  0%,
+  92%,
+  100% {
+    transform: scaleY(1);
+  }
+  95% {
+    transform: scaleY(0.1);
+  }
+}
+
+@keyframes tail-wag {
+  to {
+    transform: rotate(14deg);
+  }
+}
+
+@keyframes bubble-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.8);
+  }
+}
+
+@media (max-width: 960px) {
+  .room-mode {
+    grid-template-columns: 1fr;
+    padding-top: 16px;
+  }
+
+  .room-mode .catalog {
+    position: static;
+    max-height: none;
+  }
+
+  .room-scene {
+    border-radius: 20px;
+    box-shadow: 5px 5px 0 var(--line);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .room-item__yield {
+    display: none;
+  }
+}
