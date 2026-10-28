@@ -1,8 +1,5 @@
-import { CircularProgress } from '@material-ui/core';
-import Badge from '@material-ui/core/Badge';
-import Drawer from '@material-ui/core/Drawer';
-import Grid from '@material-ui/core/Grid';
-import AddShoppingCartIcon from '@material-ui/icons/AddShoppingCart';
+import { Badge, CircularProgress, Drawer, Grid } from '@material-ui/core';
+import { AddShoppingCart as AddShoppingCartIcon } from '@material-ui/icons';
 import { useState } from 'react';
 import { useQuery } from 'react-query';
 
