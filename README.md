@@ -2,6 +2,8 @@
 
 This is a fake online store that I created to start learning Typescript.
 
+[LIVE DEMO](https://react-online-store-three.vercel.app/)
+
 ## Tech Stack
 
 - Typescript
