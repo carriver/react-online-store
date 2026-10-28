@@ -1,4 +1,4 @@
-import { Button } from '@material-ui/core';
+import { Button } from '@mui/material';
 import React from 'react';
 
 import { CartItemType } from '../pages/Store';
@@ -21,6 +21,7 @@ const CartItem: React.FC<Props> = ({ item, addToCart, removeFromCart }) => (
       <div className='buttons'>
         <Button
           size='small'
+          color='inherit'
           disableElevation
           variant='contained'
           onClick={() => removeFromCart(item.id)}>
@@ -29,6 +30,7 @@ const CartItem: React.FC<Props> = ({ item, addToCart, removeFromCart }) => (
         <p>{item.amount}</p>
         <Button
           size='small'
+          color='inherit'
           disableElevation
           variant='contained'
           onClick={() => addToCart(item)}>

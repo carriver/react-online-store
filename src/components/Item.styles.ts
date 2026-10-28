@@ -11,6 +11,8 @@ const Wrapper = styled.div`
 
   button {
     border-radius: 0 0 20px 20px;
+    font-size: 16px;
+    padding: calc(6px + 0.4em) calc(8px + 0.2em);
   }
 
   img {

@@ -1,5 +1,5 @@
-import { Badge, CircularProgress, Drawer, Grid } from '@material-ui/core';
-import { AddShoppingCart as AddShoppingCartIcon } from '@material-ui/icons';
+import { Badge, CircularProgress, Drawer, Grid } from '@mui/material';
+import { AddShoppingCart as AddShoppingCartIcon } from '@mui/icons-material';
 import { useState } from 'react';
 import { useQuery } from 'react-query';
 
@@ -90,7 +90,7 @@ function App() {
         </Drawer>
         <Grid container spacing={3}>
           {data?.map((item) => (
-            <Grid item key={item.id} xs={12} sm={4}>
+            <Grid key={item.id} size={{ xs: 12, sm: 4 }}>
               <Item item={item} handleAddToCart={handleAddToCart} />
             </Grid>
           ))}

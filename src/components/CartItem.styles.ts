@@ -11,6 +11,10 @@ const Wrapper = styled.div`
     flex: 1;
   }
 
+  .buttons button {
+    font-size: 16px;
+  }
+
   .information,
   .buttons {
     display: flex;
