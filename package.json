@@ -11,7 +11,7 @@
     "react-dom": "^17.0.2",
     "react-query": "^3.34.15",
     "react-router-dom": "^6.2.1",
-    "styled-components": "^5.3.3"
+    "styled-components": "6.6.0"
   },
   "scripts": {
     "dev": "vite",
@@ -30,7 +30,6 @@
     "@types/node": "22.20.5",
     "@types/react": "^17.0.39",
     "@types/react-dom": "^17.0.11",
-    "@types/styled-components": "^5.1.23",
     "@vitejs/plugin-react": "6.1.2",
     "eslint": "9.39.5",
     "eslint-plugin-react": "7.37.5",
