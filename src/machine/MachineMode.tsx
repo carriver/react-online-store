@@ -339,7 +339,11 @@ function MachineMode({ products, onOpenCart }: { products: Product[]; onOpenCart
                 </span>
                 <Coil spinning={isActive && phase === 'vending'} />
                 <span className='slot__tag' aria-hidden='true'>
-                  <b>{slotCode}</b> <span className='slot__price'>{formatCoins(costOf(index))}</span>
+                  <b>{slotCode}</b>{' '}
+                  <span className='slot__price'>
+                    <CoinIcon />
+                    {formatCoins(costOf(index))}
+                  </span>
                 </span>
               </button>
             );

@@ -227,6 +227,17 @@
   color: var(--butter);
 }
 
+.slot__price {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.slot__price .coin-icon {
+  width: 1em;
+  height: 1em;
+}
+
 .machine__panel {
   grid-area: panel;
   display: flex;
@@ -663,13 +674,18 @@
 }
 
 @media (max-width: 520px) {
-  .slot__price {
-    display: none;
+  .slot__tag {
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    font-size: 0.72rem;
+    line-height: 1.2;
+    padding: 1px 3px;
   }
 
-  .slot__tag {
-    font-size: 0.72rem;
-    padding: 0 6px;
+  .slot__price {
+    gap: 1px;
+    letter-spacing: -0.02em;
   }
 
   .slot__product {
