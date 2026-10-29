@@ -1,6 +1,6 @@
 import type { MouseEvent, ReactNode } from 'react';
 
-import type { Product } from '../cart';
+import { countItems, type Product } from '../cart';
 import { categoryLabel, formatCoins, formatCoinsPerSecond } from '../catalog';
 import { COUPONS, itemYieldPerSecond, listPrice } from '../game/economy';
 import { centerOf, useGame, useGameSelector } from '../game/GameProvider';
@@ -11,7 +11,8 @@ import './Catalog.css';
 function CatalogRow({ product, amount, isNew }: { product: Product; amount: number; isNew: boolean }) {
   const { dispatch, sfx, pop } = useGame();
   const cost = useGameSelector((state) => nextItemCost(state, product));
-  const fullPrice = listPrice(product, amount);
+  const totalOwned = useGameSelector((state) => countItems(state.cart));
+  const fullPrice = listPrice(product, amount, totalOwned);
   const shortBy = useGameSelector((state) => Math.max(0, Math.ceil(cost - state.coins)));
 
   const buy = (event: MouseEvent<HTMLButtonElement>) => {

@@ -1,4 +1,4 @@
-import { addToCart, amountOwned, refundForOne, removeOneFromCart, type CartItemType, type Product } from '../cart';
+import { addToCart, amountOwned, countItems, refundForOne, removeOneFromCart, type CartItemType, type Product } from '../cart';
 import {
   COUPONS,
   PERKS,
@@ -103,7 +103,7 @@ const tick = (state: GameState, now: number): GameState => {
 };
 
 export const nextItemCost = (state: GameState, product: Product) =>
-  itemCost(product, amountOwned(state.cart, product.id), state.appliedCoupon);
+  itemCost(product, amountOwned(state.cart, product.id), countItems(state.cart), state.appliedCoupon);
 
 const buy = (state: GameState, product: Product): GameState => {
   const cost = nextItemCost(state, product);

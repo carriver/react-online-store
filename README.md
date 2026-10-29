@@ -16,7 +16,7 @@ Pick a mode with the toggle in the header; both share the same cart, coins and s
 
 Tap Mochi or shake the machine for coins, then spend them on items. Every item you own earns coins per
 second, including while you are away (up to the hopper's limit), and each extra copy of an item costs 15%
-more. Coins also buy perks, coupons (a discount on items until the next checkout) and color themes.
+more, and everything you own nudges every price up 3%, so income can't snowball. Coins also buy perks, coupons (a discount on items until the next checkout) and color themes.
 Checking out prints a receipt, empties the room and awards stamps, each a permanent income boost. A short
 guide explains this on the first visit. Progress is saved in the browser's local storage.
 

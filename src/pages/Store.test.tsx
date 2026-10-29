@@ -57,20 +57,20 @@ describe('Store', () => {
     expect(screen.getByRole('dialog', { name: 'How to play' })).toBeInTheDocument();
   });
 
-  it('spends coins on items, which move into the room and raise the price of the next copy', async () => {
+  it('spends coins on items, which move into the room and raise later prices', async () => {
     startWith({ coins: 100 });
     respondWith({ ok: true, status: 200, json: async () => products });
     renderStore();
 
     await userEvent.click(await screen.findByRole('button', { name: 'Buy Backpack for 10 coins' }));
     await userEvent.click(screen.getByRole('button', { name: 'Buy Backpack for 12 coins' }));
-    await userEvent.click(screen.getByRole('button', { name: 'Buy Shirt for 11 coins' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Buy Shirt for 12 coins' }));
     expect(screen.getByRole('button', { name: 'Cart, 3 items' })).toBeInTheDocument();
     expect(within(screen.getByRole('region', { name: /Your room/ })).getByRole('img', { name: 'Backpack' })).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'Cart, 3 items' }));
     const cart = screen.getByRole('dialog', { name: 'Your Shopping Cart' });
-    expect(within(cart).getByText('33 coins')).toBeInTheDocument();
+    expect(within(cart).getByText('34 coins')).toBeInTheDocument();
     expect(within(cart).getByRole('heading', { name: 'Checkout earns 1 stamp' })).toBeInTheDocument();
   });
 

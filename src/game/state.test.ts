@@ -29,8 +29,8 @@ describe('gameReducer', () => {
     const once = play(start({ coins: 300 }), { type: 'buy', product: backpack });
     const twice = play(once, { type: 'buy', product: backpack });
     expect(once.coins).toBe(200);
-    expect(twice.coins).toBe(85);
-    expect(twice.cart).toEqual([{ ...backpack, amount: 2, paid: 215 }]);
+    expect(twice.coins).toBe(81);
+    expect(twice.cart).toEqual([{ ...backpack, amount: 2, paid: 219 }]);
     expect(twice.discovered).toEqual([1]);
   });
 
@@ -68,7 +68,7 @@ describe('gameReducer', () => {
 
   it('only buys what the player can afford', () => {
     expect(play(start({ coins: 10 }), { type: 'buyPerk', perk: 'vibes' }).perks.vibes).toBe(0);
-    const bought = play(start({ coins: 60 }), { type: 'buyPerk', perk: 'vibes' });
+    const bought = play(start({ coins: 110 }), { type: 'buyPerk', perk: 'vibes' });
     expect(bought.perks.vibes).toBe(1);
     expect(bought.coins).toBe(10);
   });
@@ -89,9 +89,9 @@ describe('gameReducer', () => {
     );
     expect(state.cart).toEqual([]);
     expect(state.appliedCoupon).toBeNull();
-    expect(state.coins).toBe(900 - 600 - 90 - 103);
+    expect(state.coins).toBe(900 - 600 - 90 - 107);
     expect(state.stamps).toBe(4);
-    expect(state.lastReceipt).toMatchObject({ number: 1, value: 200, spent: 193, coupon: 'coupon10', stampsEarned: 4, printedAt: 42 });
+    expect(state.lastReceipt).toMatchObject({ number: 1, value: 200, spent: 197, coupon: 'coupon10', stampsEarned: 4, printedAt: 42 });
   });
 
   it('remembers that the guide was read', () => {

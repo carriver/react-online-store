@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type MouseEvent } from 'react';
 
-import { amountOwned, type Product } from '../cart';
+import { amountOwned, countItems, type Product } from '../cart';
 import { formatCoins, formatCoinsPerSecond, machineCode, machineRows, MACHINE_COLUMNS } from '../catalog';
 import CoinIcon from '../components/CoinIcon';
 import { COUPONS, coinsPerTap, itemCost } from '../game/economy';
@@ -90,7 +90,7 @@ function MachineMode({ products, onOpenCart }: { products: Product[]; onOpenCart
     return row >= 0 && column >= 0 && index < products.length ? index : null;
   };
 
-  const costOf = (index: number) => itemCost(products[index], amountOwned(cart, products[index].id), coupon);
+  const costOf = (index: number) => itemCost(products[index], amountOwned(cart, products[index].id), countItems(cart), coupon);
 
   const describe = (index: number) =>
     `${machineCode(index)} · ${formatCoins(costOf(index))} COINS${coupon ? ` (${COUPONS[coupon].percentOff}% OFF)` : ''} · PRESS VEND`;

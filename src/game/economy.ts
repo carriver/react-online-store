@@ -5,16 +5,17 @@ export type CouponId = 'coupon5' | 'coupon10' | 'coupon20';
 export type ThemeId = 'sunny' | 'midnight' | 'matcha';
 
 export const BASE_INCOME_PER_SECOND = 0.5;
-export const VIBES_BONUS_PER_LEVEL = 0.25;
+export const VIBES_BONUS_PER_LEVEL = 0.1;
 export const STAMP_BONUS = 0.1;
 export const BASE_OFFLINE_HOURS = 1;
 export const MAX_HOPPER_LEVEL = 7;
 export const STAMP_VALUE_SCALE = 10;
 export const STARTING_COINS = 20;
 export const COPY_PRICE_GROWTH = 1.15;
+export const STORE_PRICE_CREEP = 1.03;
 
 export const PERKS: Record<PerkId, { name: string; blurb: string; baseCost: number; growth: number; maxLevel: number }> = {
-  vibes: { name: 'Cozier vibes', blurb: '+25% income per level', baseCost: 50, growth: 1.6, maxLevel: 20 },
+  vibes: { name: 'Cozier vibes', blurb: '+10% income per level', baseCost: 100, growth: 2, maxLevel: 20 },
   thumb: { name: 'Stronger thumb', blurb: '+1 coin per tap or shake', baseCost: 25, growth: 1.5, maxLevel: 20 },
   hopper: { name: 'Deeper hopper', blurb: '+1 hour of earnings while away', baseCost: 100, growth: 2, maxLevel: MAX_HOPPER_LEVEL },
 };
@@ -31,20 +32,26 @@ export const THEMES: Record<ThemeId, { name: string; cost: number }> = {
   matcha: { name: 'Matcha', cost: 300 },
 };
 
-// Square root keeps a $999 drive from dwarfing a $7 ring: the cheap things still feel worth owning.
-export const itemYieldPerSecond = (price: number) => Math.round((0.2 + Math.sqrt(price) / 5) * 10) / 10;
+// An item pays for itself in about a minute; pricier ones a little faster, so saving up is worth it.
+export const itemYieldPerSecond = (price: number) => {
+  const coins = Math.ceil(price);
+  const paybackSeconds = 60 * (coins / 8) ** -0.12;
+  return Math.max(0.1, Math.round((coins / paybackSeconds) * 10) / 10);
+};
 
 export const basePrice = (product: Pick<Product, 'price'>) => Math.ceil(product.price);
 
-// Each extra copy costs more, or buying the cheapest shirt fifty times would outrun every other choice.
-export const listPrice = (product: Pick<Product, 'price'>, owned: number) => Math.ceil(basePrice(product) * COPY_PRICE_GROWTH ** owned);
+// Each extra copy costs more, and everything owned nudges every price up, so income can't snowball:
+// it grows with what you own while prices grow faster.
+export const listPrice = (product: Pick<Product, 'price'>, owned: number, totalOwned: number) =>
+  Math.ceil(basePrice(product) * COPY_PRICE_GROWTH ** owned * STORE_PRICE_CREEP ** totalOwned);
 
 // At least one coin off, so a coupon never rounds away to nothing on a cheap item.
 export const couponDiscount = (price: number, coupon: CouponId | null) =>
   coupon ? Math.max(1, Math.round((price * COUPONS[coupon].percentOff) / 100)) : 0;
 
-export const itemCost = (product: Pick<Product, 'price'>, owned: number, coupon: CouponId | null) => {
-  const price = listPrice(product, owned);
+export const itemCost = (product: Pick<Product, 'price'>, owned: number, totalOwned: number, coupon: CouponId | null) => {
+  const price = listPrice(product, owned, totalOwned);
   return price - couponDiscount(price, coupon);
 };
 
