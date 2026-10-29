@@ -1,4 +1,4 @@
-# Fake Store
+# Fake Online Store
 
 An idle shop where nothing ships. I started this project to learn TypeScript and later rebuilt it into a
 small casual game on top of the [Fake Store API](https://fakestoreapi.com/).

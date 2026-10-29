@@ -34,7 +34,7 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  font-size: clamp(3.4rem, 15vw, 9.5rem);
+  font-size: clamp(2.9rem, 12.5vw, 7.5rem);
   font-weight: 800;
   line-height: 0.9;
   letter-spacing: -0.05em;
@@ -44,22 +44,23 @@
   text-shadow: 6px 6px 0 var(--line);
 }
 
-.landing__title span {
+.landing__word {
+  display: inline-flex;
+  margin-inline: 0.15em;
+}
+
+.landing__letter {
   display: inline-block;
   animation: letter-drop 700ms var(--ease-spring) both;
   transition: transform 300ms var(--ease-spring);
 }
 
-.landing__title span:nth-child(even) {
+.landing__letter--alt {
   color: var(--butter);
 }
 
-.landing__title span:hover {
+.landing__letter:hover {
   transform: translateY(-10px) rotate(-6deg);
-}
-
-.landing__space {
-  width: 0.3em;
 }
 
 .landing__lede {
@@ -260,6 +261,10 @@
   .shape--blob {
     width: 140px;
     height: 130px;
+  }
+
+  .shape--squiggle {
+    display: none;
   }
 
   .shape--ring {

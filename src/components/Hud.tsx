@@ -78,11 +78,11 @@ function Hud({ onOpenCart, onOpenPerks }: { onOpenCart: () => void; onOpenPerks:
   const itemCount = useGameSelector((state) => countItems(state.cart));
   return (
     <header className='hud'>
-      <Link to='/' className='hud__brand' aria-label='Fake Store home'>
+      <Link to='/' className='hud__brand' aria-label='Fake Online Store home'>
         <span className='hud__logo' aria-hidden='true'>
           FS
         </span>
-        <span className='hud__name'>Fake Store</span>
+        <span className='hud__name'>Fake Online Store</span>
       </Link>
       <CoinCounter />
       <ModeToggle />

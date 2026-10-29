@@ -8,6 +8,11 @@ import './Landing.css';
 
 const preloadStore = () => import('./Store');
 
+const titleWords = ['FAKE', 'ONLINE', 'STORE'].map((word, wordIndex, words) => {
+  const firstOrder = words.slice(0, wordIndex).join('').length;
+  return word.split('').map((letter, letterIndex) => ({ letter, order: firstOrder + letterIndex }));
+});
+
 function RoomDoorArt() {
   return (
     <svg viewBox='0 0 200 130' aria-hidden='true' focusable='false'>
@@ -88,10 +93,17 @@ function Landing() {
 
       <main className='landing__main'>
         <p className='landing__eyebrow'>An idle shop where nothing ships</p>
-        <h1 className='landing__title' aria-label='Fake Store'>
-          {'FAKE STORE'.split('').map((letter, index) => (
-            <span key={index} aria-hidden='true' style={{ animationDelay: `${index * 55}ms` }} className={letter === ' ' ? 'landing__space' : undefined}>
-              {letter}
+        <h1 className='landing__title' aria-label='Fake Online Store'>
+          {titleWords.map((letters, wordIndex) => (
+            <span key={wordIndex} className='landing__word' aria-hidden='true'>
+              {letters.map(({ letter, order }) => (
+                <span
+                  key={order}
+                  className={order % 2 === 1 ? 'landing__letter landing__letter--alt' : 'landing__letter'}
+                  style={{ animationDelay: `${order * 55}ms` }}>
+                  {letter}
+                </span>
+              ))}
             </span>
           ))}
         </h1>

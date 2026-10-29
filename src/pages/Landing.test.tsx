@@ -17,7 +17,7 @@ describe('Landing', () => {
       </QueryClientProvider>,
     );
 
-    expect(screen.getByRole('heading', { level: 1, name: 'Fake Store' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Fake Online Store' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Cozy Room/ })).toHaveAttribute('href', '/store?mode=room');
     expect(screen.getByRole('link', { name: /Fake-o-Mat/ })).toHaveAttribute('href', '/store?mode=machine');
     expect(screen.getByRole('link', { name: 'Click here to start shopping' })).toHaveAttribute('href', '/store');
