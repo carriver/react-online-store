@@ -14,9 +14,11 @@ Pick a mode with the toggle in the header; both share the same cart, coins and s
 - **Fake-o-Mat**: a vending machine. Punch a code like `B3` on the keypad (or your keyboard) and press
   VEND, or tap a slot twice. Sometimes an item gets stuck; shake the machine.
 
-Every item you own earns coins per second, including while you are away (up to the hopper's limit).
-Coins buy perks, checkout coupons and color themes. Checking out prints a receipt, empties the room and
-awards stamps, each a permanent income boost. Progress is saved in the browser's local storage.
+Tap Mochi or shake the machine for coins, then spend them on items. Every item you own earns coins per
+second, including while you are away (up to the hopper's limit), and each extra copy of an item costs 15%
+more. Coins also buy perks, coupons (a discount on items until the next checkout) and color themes.
+Checking out prints a receipt, empties the room and awards stamps, each a permanent income boost. A short
+guide explains this on the first visit. Progress is saved in the browser's local storage.
 
 ## Tech Stack
 
