@@ -4,6 +4,7 @@ import { useSearchParams } from 'react-router';
 
 import { productsQuery } from '../api';
 import CartSheet from '../components/CartSheet';
+import GuideSheet from '../components/GuideSheet';
 import Hud from '../components/Hud';
 import PerksSheet from '../components/PerksSheet';
 import ReceiptSheet from '../components/ReceiptSheet';
@@ -46,6 +47,7 @@ function StoreFloor() {
   const mode = useGameSelector((state) => state.mode);
   const [cartOpen, setCartOpen] = useState(false);
   const [perksOpen, setPerksOpen] = useState(false);
+  const [guideOpen, setGuideOpen] = useState(false);
   useModeFromLink();
 
   useEffect(() => {
@@ -69,7 +71,7 @@ function StoreFloor() {
       <a className='skip-link' href='#store-main'>
         Skip to the store
       </a>
-      <Hud onOpenCart={() => setCartOpen(true)} onOpenPerks={openPerks} />
+      <Hud onOpenCart={() => setCartOpen(true)} onOpenPerks={openPerks} onOpenGuide={() => setGuideOpen(true)} />
       <main id='store-main' className='store__main'>
         {isPending ? (
           <StockingShelves />
@@ -89,6 +91,7 @@ function StoreFloor() {
       <PerksSheet open={perksOpen} onClose={() => setPerksOpen(false)} />
       <ReceiptSheet />
       <WelcomeBack />
+      <GuideSheet open={guideOpen} onClose={() => setGuideOpen(false)} />
     </div>
   );
 }

@@ -1,12 +1,13 @@
-import { addToCart, cartTotal, removeOneFromCart, type CartItemType, type Product } from '../cart';
+import { addToCart, amountOwned, refundForOne, removeOneFromCart, type CartItemType, type Product } from '../cart';
 import {
   COUPONS,
   PERKS,
+  STARTING_COINS,
   THEMES,
+  cartValue,
   coinsPerTap,
-  discountedTotal,
-  discoveryBonus,
   incomePerSecond,
+  itemCost,
   offlineEarnings,
   perkCost,
   stampsForCheckout,
@@ -20,9 +21,9 @@ export type Mode = 'room' | 'machine';
 export type Receipt = {
   number: number;
   items: CartItemType[];
-  subtotal: number;
+  value: number;
+  spent: number;
   coupon: CouponId | null;
-  total: number;
   stampsEarned: number;
   printedAt: number;
 };
@@ -33,6 +34,7 @@ export type GameState = {
   discovered: number[];
   perks: Record<PerkId, number>;
   coupons: CouponId[];
+  // Activating a coupon uses it up; it then discounts every purchase until the next checkout.
   appliedCoupon: CouponId | null;
   ownedThemes: ThemeId[];
   theme: ThemeId;
@@ -40,6 +42,7 @@ export type GameState = {
   receiptsPrinted: number;
   mode: Mode;
   muted: boolean;
+  seenGuide: boolean;
   lastTickAt: number;
   awayEarnings: { coins: number; seconds: number } | null;
   lastReceipt: Receipt | null;
@@ -48,23 +51,24 @@ export type GameState = {
 export type GameAction =
   | { type: 'tick'; now: number }
   | { type: 'tap' }
-  | { type: 'add'; product: Product }
+  | { type: 'buy'; product: Product }
   | { type: 'remove'; productId: number }
   | { type: 'buyPerk'; perk: PerkId }
   | { type: 'buyCoupon'; coupon: CouponId }
-  | { type: 'applyCoupon'; coupon: CouponId | null }
+  | { type: 'applyCoupon'; coupon: CouponId }
   | { type: 'chooseTheme'; theme: ThemeId }
   | { type: 'checkout'; now: number }
   | { type: 'dismissReceipt' }
   | { type: 'collectAwayEarnings' }
   | { type: 'setMode'; mode: Mode }
-  | { type: 'toggleMute' };
+  | { type: 'toggleMute' }
+  | { type: 'closeGuide' };
 
 // The clock pauses in hidden tabs; a gap this long counts as time away and earns the welcome-back payout.
 export const AWAY_THRESHOLD_SECONDS = 60;
 
 export const createInitialState = (now: number): GameState => ({
-  coins: 0,
+  coins: STARTING_COINS,
   cart: [],
   discovered: [],
   perks: { vibes: 0, thumb: 0, hopper: 0 },
@@ -76,6 +80,7 @@ export const createInitialState = (now: number): GameState => ({
   receiptsPrinted: 0,
   mode: 'room',
   muted: false,
+  seenGuide: false,
   lastTickAt: now,
   awayEarnings: null,
   lastReceipt: null,
@@ -99,14 +104,24 @@ const tick = (state: GameState, now: number): GameState => {
   return { ...state, awayEarnings, lastTickAt: now };
 };
 
-const add = (state: GameState, product: Product): GameState => {
-  const isFirstFind = !state.discovered.includes(product.id);
+export const nextItemCost = (state: GameState, product: Product) =>
+  itemCost(product, amountOwned(state.cart, product.id), state.appliedCoupon);
+
+const buy = (state: GameState, product: Product): GameState => {
+  const cost = nextItemCost(state, product);
+  const coins = spend(state, cost);
+  if (coins === null) return state;
   return {
     ...state,
-    cart: addToCart(state.cart, product),
-    discovered: isFirstFind ? [...state.discovered, product.id] : state.discovered,
-    coins: isFirstFind ? state.coins + discoveryBonus(product) : state.coins,
+    coins,
+    cart: addToCart(state.cart, product, cost),
+    discovered: state.discovered.includes(product.id) ? state.discovered : [...state.discovered, product.id],
   };
+};
+
+const remove = (state: GameState, productId: number): GameState => {
+  const item = state.cart.find((entry) => entry.id === productId);
+  return item ? { ...state, coins: state.coins + refundForOne(item), cart: removeOneFromCart(state.cart, productId) } : state;
 };
 
 const buyPerk = (state: GameState, perk: PerkId): GameState => {
@@ -115,10 +130,21 @@ const buyPerk = (state: GameState, perk: PerkId): GameState => {
   return coins === null ? state : { ...state, coins, perks: { ...state.perks, [perk]: level + 1 } };
 };
 
+const withoutOne = <T,>(list: T[], value: T) => {
+  const index = list.indexOf(value);
+  return index === -1 ? list : [...list.slice(0, index), ...list.slice(index + 1)];
+};
+
 const buyCoupon = (state: GameState, coupon: CouponId): GameState => {
   const coins = spend(state, COUPONS[coupon].cost);
-  return coins === null ? state : { ...state, coins, coupons: [...state.coupons, coupon], appliedCoupon: coupon };
+  if (coins === null) return state;
+  return state.appliedCoupon ? { ...state, coins, coupons: [...state.coupons, coupon] } : { ...state, coins, appliedCoupon: coupon };
 };
+
+const applyCoupon = (state: GameState, coupon: CouponId): GameState =>
+  state.appliedCoupon || !state.coupons.includes(coupon)
+    ? state
+    : { ...state, coupons: withoutOne(state.coupons, coupon), appliedCoupon: coupon };
 
 const chooseTheme = (state: GameState, theme: ThemeId): GameState => {
   if (state.ownedThemes.includes(theme)) return { ...state, theme };
@@ -126,30 +152,22 @@ const chooseTheme = (state: GameState, theme: ThemeId): GameState => {
   return coins === null ? state : { ...state, coins, theme, ownedThemes: [...state.ownedThemes, theme] };
 };
 
-const withoutOne = <T,>(list: T[], value: T) => {
-  const index = list.indexOf(value);
-  return index === -1 ? list : [...list.slice(0, index), ...list.slice(index + 1)];
-};
-
 const checkout = (state: GameState, now: number): GameState => {
   if (state.cart.length === 0) return state;
-  const subtotal = cartTotal(state.cart);
-  const total = discountedTotal(subtotal, state.appliedCoupon);
-  const stampsEarned = stampsForCheckout(total);
+  const value = cartValue(state.cart);
+  const stampsEarned = stampsForCheckout(value);
   const receipt: Receipt = {
     number: state.receiptsPrinted + 1,
     items: state.cart,
-    subtotal,
+    value,
+    spent: state.cart.reduce((total, item) => total + item.paid, 0),
     coupon: state.appliedCoupon,
-    total,
     stampsEarned,
     printedAt: now,
   };
-  const coupons = state.appliedCoupon ? withoutOne(state.coupons, state.appliedCoupon) : state.coupons;
   return {
     ...state,
     cart: [],
-    coupons,
     appliedCoupon: null,
     stamps: state.stamps + stampsEarned,
     receiptsPrinted: receipt.number,
@@ -163,18 +181,16 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
       return tick(state, action.now);
     case 'tap':
       return { ...state, coins: state.coins + coinsPerTap(state.perks.thumb) };
-    case 'add':
-      return add(state, action.product);
+    case 'buy':
+      return buy(state, action.product);
     case 'remove':
-      return { ...state, cart: removeOneFromCart(state.cart, action.productId) };
+      return remove(state, action.productId);
     case 'buyPerk':
       return buyPerk(state, action.perk);
     case 'buyCoupon':
       return buyCoupon(state, action.coupon);
     case 'applyCoupon':
-      return action.coupon === null || state.coupons.includes(action.coupon)
-        ? { ...state, appliedCoupon: action.coupon }
-        : state;
+      return applyCoupon(state, action.coupon);
     case 'chooseTheme':
       return chooseTheme(state, action.theme);
     case 'checkout':
@@ -189,5 +205,7 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
       return { ...state, mode: action.mode };
     case 'toggleMute':
       return { ...state, muted: !state.muted };
+    case 'closeGuide':
+      return { ...state, seenGuide: true };
   }
 };

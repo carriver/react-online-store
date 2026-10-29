@@ -81,8 +81,13 @@
   cursor: pointer;
 }
 
-.stepper button:hover {
+.stepper button:hover:not(:disabled) {
   background: var(--paper-deep);
+}
+
+.stepper button:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
 }
 
 .stepper output {
@@ -128,10 +133,19 @@
   cursor: pointer;
 }
 
-.coupon-chip[aria-pressed='true'] {
-  border-style: solid;
+.coupon-chip:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.cart-coupons__active {
+  margin-bottom: 10px;
+  padding: 10px 12px;
+  border: 2px solid var(--line);
+  border-radius: 12px;
   background: var(--mint);
   color: #10251a;
+  font-size: 0.9rem;
 }
 
 .cart-totals {
@@ -148,14 +162,6 @@
   gap: 12px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
-}
-
-.cart-totals__discount {
-  color: #1d8a5c;
-}
-
-:root[data-theme='midnight'] .cart-totals__discount {
-  color: var(--mint);
 }
 
 .cart-totals__total {

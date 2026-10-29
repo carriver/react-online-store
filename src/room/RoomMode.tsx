@@ -62,7 +62,7 @@ function RoomMode({ products }: { products: Product[] }) {
       <div className='room-mode__stage'>
         <RoomScene products={products} />
         <p className='room-mode__hint'>
-          Everything you add moves in and earns coins, even while you’re away. Tap Mochi for a little extra.
+          Tap Mochi for coins. Spend them on items, and each item earns coins every second, even while you’re away.
         </p>
       </div>
       <Catalog

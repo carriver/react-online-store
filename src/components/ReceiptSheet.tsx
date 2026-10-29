@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 
-import { formatMoney } from '../catalog';
-import { COUPONS, STAMP_BONUS } from '../game/economy';
+import { formatCoins } from '../catalog';
+import { COUPONS, STAMP_BONUS, basePrice } from '../game/economy';
 import { useGame, useGameSelector } from '../game/GameProvider';
 import Sheet from './Sheet';
 import './ReceiptSheet.css';
@@ -52,7 +52,7 @@ function ReceiptSheet() {
           <div className='receipt-slot' aria-hidden='true' />
           <article className='receipt' aria-label={`Receipt number ${receipt.number}`}>
             <header className='receipt__head'>
-              <p className='receipt__store'>FAKE STORE</p>
+              <p className='receipt__store'>FAKE ONLINE STORE</p>
               <p>Est. whenever · Ships never</p>
               <p>
                 Receipt #{String(receipt.number).padStart(4, '0')} · {new Date(receipt.printedAt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}
@@ -64,24 +64,24 @@ function ReceiptSheet() {
                   <span>
                     {item.amount} × {item.title}
                   </span>
-                  <span>{formatMoney(item.amount * item.price)}</span>
+                  <span>{formatCoins(item.amount * basePrice(item))}</span>
                 </li>
               ))}
             </ul>
             <div className='receipt__totals'>
               <p>
-                <span>Subtotal</span>
-                <span>{formatMoney(receipt.subtotal)}</span>
+                <span>Value</span>
+                <span>{formatCoins(receipt.value)}</span>
               </p>
               {receipt.coupon ? (
                 <p>
-                  <span>Coupon {COUPONS[receipt.coupon].name}</span>
-                  <span>−{formatMoney(receipt.subtotal - receipt.total)}</span>
+                  <span>Coupon used</span>
+                  <span>{COUPONS[receipt.coupon].name}</span>
                 </p>
               ) : null}
               <p className='receipt__total'>
-                <span>TOTAL</span>
-                <span>{formatMoney(receipt.total)}</span>
+                <span>SPENT</span>
+                <span>{formatCoins(receipt.spent)} coins</span>
               </p>
             </div>
             <p className='receipt__stamps'>

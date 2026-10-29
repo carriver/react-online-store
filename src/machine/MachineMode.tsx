@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type MouseEvent } from 'react';
 
-import type { Product } from '../cart';
-import { formatMoney, formatRate, machineCode, machineRows, MACHINE_COLUMNS } from '../catalog';
+import { amountOwned, type Product } from '../cart';
+import { formatCoins, formatCoinsPerSecond, machineCode, machineRows, MACHINE_COLUMNS } from '../catalog';
 import CoinIcon from '../components/CoinIcon';
-import { coinsPerTap, discoveryBonus } from '../game/economy';
+import { coinsPerTap, itemCost } from '../game/economy';
 import { centerOf, useGame, useGameSelector } from '../game/GameProvider';
 import { currentIncome } from '../game/state';
 import './machine.css';
@@ -58,6 +58,8 @@ function MachineMode({ products, onOpenCart }: { products: Product[]; onOpenCart
   const rate = useGameSelector(currentIncome);
   const discoveredCount = useGameSelector((state) => state.discovered.length);
   const stamps = useGameSelector((state) => state.stamps);
+  const cart = useGameSelector((state) => state.cart);
+  const coupon = useGameSelector((state) => state.appliedCoupon);
   const [code, setCode] = useState('');
   const [message, setMessage] = useState(IDLE_MESSAGE);
   const [phase, setPhase] = useState<Phase>('idle');
@@ -88,21 +90,31 @@ function MachineMode({ products, onOpenCart }: { products: Product[]; onOpenCart
     return row >= 0 && column >= 0 && index < products.length ? index : null;
   };
 
-  const describe = (index: number) => `${machineCode(index)} · ${formatMoney(products[index].price)} · PRESS VEND`;
+  const costOf = (index: number) => itemCost(products[index], amountOwned(cart, products[index].id), coupon);
+
+  const describe = (index: number) => `${machineCode(index)} · ${formatCoins(costOf(index))} COINS · PRESS VEND`;
+
+  const shortfall = (index: number) => Math.max(0, Math.ceil(costOf(index) - getState().coins));
 
   const land = useCallback(
     (product: Product) => {
-      const isFirstFind = !getState().discovered.includes(product.id);
-      dispatch({ type: 'add', product });
-      sfx('thud');
-      later(() => sfx(isFirstFind ? 'coin' : 'add'), 120);
-      if (trayRef.current)
-        pop(isFirstFind ? `First find! +${discoveryBonus(product)}` : 'Clunk!', centerOf(trayRef.current), isFirstFind ? 'coin' : 'info');
-      setTray((items) => [...items, product].slice(-TRAY_SIZE));
+      const before = getState();
+      const isFirstFind = !before.discovered.includes(product.id);
+      dispatch({ type: 'buy', product });
+      const bought = getState() !== before;
       setDrop(null);
       setActiveIndex(null);
       setPhase('idle');
       setCode('');
+      sfx('thud');
+      if (!bought) {
+        later(() => sfx('error'), 120);
+        setMessage('NOT ENOUGH COINS');
+        return;
+      }
+      later(() => sfx(isFirstFind ? 'coin' : 'add'), 120);
+      if (trayRef.current) pop(isFirstFind ? 'New find!' : 'Clunk!', centerOf(trayRef.current), 'info');
+      setTray((items) => [...items, product].slice(-TRAY_SIZE));
       setMessage(isFirstFind ? 'NEW FIND! ENJOY' : 'ENJOY! COME AGAIN');
       later(() => setMessage((current) => (current.startsWith('NEW') || current.startsWith('ENJOY') ? IDLE_MESSAGE : current)), 2600);
     },
@@ -176,6 +188,11 @@ function MachineMode({ products, onOpenCart }: { products: Product[]; onOpenCart
     if (index === null) {
       sfx('error');
       setMessage(requested ? 'NO SUCH SLOT' : `PICK A SLOT ${rows[0]}1–${machineCode(products.length - 1)}`);
+      return;
+    }
+    if (shortfall(index) > 0) {
+      sfx('error');
+      setMessage(`NEED ${formatCoins(shortfall(index))} MORE COINS`);
       return;
     }
     vendCount.current += 1;
@@ -316,13 +333,13 @@ function MachineMode({ products, onOpenCart }: { products: Product[]; onOpenCart
                   isActive && phase === 'dropping' ? 'slot--empty' : '',
                 ].join(' ')}
                 onClick={() => chooseSlot(index)}
-                aria-label={`${slotCode}: ${product.title}, ${formatMoney(product.price)}`}>
+                aria-label={`${slotCode}: ${product.title}, ${formatCoins(costOf(index))} coins`}>
                 <span className='slot__product'>
                   <img src={product.image} alt='' width='72' height='72' decoding='async' fetchPriority={index < 10 ? 'high' : 'auto'} />
                 </span>
                 <Coil spinning={isActive && phase === 'vending'} />
                 <span className='slot__tag' aria-hidden='true'>
-                  <b>{slotCode}</b> <span className='slot__price'>{formatMoney(product.price)}</span>
+                  <b>{slotCode}</b> <span className='slot__price'>{formatCoins(costOf(index))}</span>
                 </span>
               </button>
             );
@@ -361,14 +378,14 @@ function MachineMode({ products, onOpenCart }: { products: Product[]; onOpenCart
             <CoinIcon />
             Shake it
           </button>
-          <div className='machine__hopper' aria-label={`Coin hopper filling at ${formatRate(rate)} per second`}>
+          <div className='machine__hopper' aria-label={`Coin hopper filling at ${formatCoinsPerSecond(rate)}`}>
             <span className='machine__hopper-window' aria-hidden='true'>
               <i />
               <i />
               <i />
             </span>
             <span aria-hidden='true'>
-              <b>Hopper</b> {formatRate(rate)}
+              <b>Hopper</b> +{formatCoinsPerSecond(rate)}
             </span>
           </div>
           <dl className='machine__stats'>
@@ -414,7 +431,8 @@ function MachineMode({ products, onOpenCart }: { products: Product[]; onOpenCart
       </div>
 
       <p className='machine-mode__hint'>
-        Type a code like <kbd>B3</kbd> on the keypad (or your keyboard) and press <kbd>VEND</kbd>. Tap a slot twice to vend it.
+        Shake the machine for coins. Spend them on items, and each item earns coins every second, even while you’re away. Type a code
+        like <kbd>B3</kbd> on the keypad (or your keyboard) and press <kbd>VEND</kbd>, or tap a slot twice.
       </p>
     </div>
   );

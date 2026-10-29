@@ -81,7 +81,11 @@ export const formatCoins = (coins: number) => {
     : new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 }).format(whole);
 };
 
-export const formatRate = (perSecond: number) => `+${perSecond < 100 ? perSecond.toFixed(1) : formatCoins(perSecond)}/s`;
+export const formatRateNumber = (perSecond: number) => (perSecond < 100 ? perSecond.toFixed(1) : formatCoins(perSecond));
+
+export const formatRate = (perSecond: number) => `+${formatRateNumber(perSecond)}/s`;
+
+export const formatCoinsPerSecond = (perSecond: number) => `${formatRateNumber(perSecond)} coins/sec`;
 
 export const formatMoney = (dollars: number) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(dollars);

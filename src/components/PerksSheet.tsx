@@ -21,6 +21,7 @@ function PerksSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const coins = useGameSelector((state) => Math.floor(state.coins));
   const perks = useGameSelector((state) => state.perks);
   const coupons = useGameSelector((state) => state.coupons);
+  const appliedCoupon = useGameSelector((state) => state.appliedCoupon);
   const ownedThemes = useGameSelector((state) => state.ownedThemes);
   const theme = useGameSelector((state) => state.theme);
   const { dispatch, sfx, pop } = useGame();
@@ -71,7 +72,10 @@ function PerksSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
 
       <section className='perks__section' aria-labelledby='perks-coupons'>
         <h3 id='perks-coupons'>Coupons</h3>
-        <p className='perks__note'>Coupons apply to your next checkout. Yes, the discount is as real as the store.</p>
+        <p className='perks__note'>
+          A coupon takes its discount off every item you buy until your next checkout. One at a time; extras wait in your cart. Yes, the
+          discount is as real as the store.
+        </p>
         {(Object.keys(COUPONS) as CouponId[]).map((coupon) => {
           const owned = coupons.filter((entry) => entry === coupon).length;
           return (
@@ -79,7 +83,8 @@ function PerksSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
               <div>
                 <h4>
                   {COUPONS[coupon].name}
-                  {owned ? <span className='perk__level'>{owned} owned</span> : null}
+                  {appliedCoupon === coupon ? <span className='perk__level'>Active</span> : null}
+                  {owned ? <span className='perk__level'>{owned} saved</span> : null}
                 </h4>
               </div>
               <div className='perk__buy'>

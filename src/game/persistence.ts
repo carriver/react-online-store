@@ -15,7 +15,9 @@ const finiteOr = (value: unknown, fallback: number) =>
 const isKeyOf = <T extends object>(table: T, value: unknown): value is keyof T =>
   typeof value === 'string' && Object.prototype.hasOwnProperty.call(table, value);
 
-const isCartItem = (value: unknown): value is CartItemType =>
+type SavedCartItem = Omit<CartItemType, 'paid'> & { paid?: unknown };
+
+const isCartItem = (value: unknown): value is SavedCartItem =>
   isRecord(value) &&
   Number.isInteger(value.id) &&
   Number.isInteger(value.amount) &&
@@ -47,8 +49,9 @@ export const parseSave = (raw: string | null, now: number): GameState => {
 
   return {
     ...initial,
-    coins: finiteOr(data.coins, 0),
-    cart: listOf(data.cart, isCartItem),
+    coins: finiteOr(data.coins, initial.coins),
+    // Saves from before items cost coins hold items that were free, so they refund nothing.
+    cart: listOf(data.cart, isCartItem).map((item) => ({ ...item, paid: Math.floor(finiteOr(item.paid, 0)) })),
     discovered: listOf(data.discovered, (id): id is number => Number.isInteger(id)),
     perks: Object.fromEntries(
       (Object.keys(PERKS) as PerkId[]).map((perk) => [
@@ -57,13 +60,14 @@ export const parseSave = (raw: string | null, now: number): GameState => {
       ]),
     ) as Record<PerkId, number>,
     coupons,
-    appliedCoupon: isKeyOf(COUPONS, data.appliedCoupon) && coupons.includes(data.appliedCoupon) ? data.appliedCoupon : null,
+    appliedCoupon: isKeyOf(COUPONS, data.appliedCoupon) ? data.appliedCoupon : null,
     ownedThemes: ownedThemes.includes('sunny') ? ownedThemes : ['sunny', ...ownedThemes],
     theme,
     stamps: Math.floor(finiteOr(data.stamps, 0)),
     receiptsPrinted: Math.floor(finiteOr(data.receiptsPrinted, 0)),
     mode: data.mode === 'machine' ? 'machine' : 'room',
     muted: data.muted === true,
+    seenGuide: data.seenGuide === true,
     lastTickAt: Math.min(lastTickAt, now),
     awayEarnings:
       isRecord(data.awayEarnings) && finiteOr(data.awayEarnings.coins, 0) > 0

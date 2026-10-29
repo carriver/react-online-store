@@ -1,14 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import {
-  discountedTotal,
+  cartValue,
   incomePerSecond,
+  itemCost,
   itemYieldPerSecond,
   offlineEarnings,
   perkCost,
   stampsForCheckout,
 } from './economy';
 
-const item = (price: number, amount = 1) => ({ id: price, title: '', description: '', category: '', image: '', price, amount });
+const item = (price: number, amount = 1) => ({ id: price, title: '', description: '', category: '', image: '', price, amount, paid: 0 });
 
 describe('economy', () => {
   it('pays more for pricier items, but with diminishing returns', () => {
@@ -42,8 +43,18 @@ describe('economy', () => {
     expect(stampsForCheckout(2000)).toBe(14);
   });
 
-  it('applies coupon discounts to the total', () => {
-    expect(discountedTotal(200, null)).toBe(200);
-    expect(discountedTotal(200, 'coupon10')).toBeCloseTo(180);
+  it('prices items in whole coins, raising the price of every extra copy', () => {
+    expect(itemCost({ price: 7.95 }, 0, null)).toBe(8);
+    expect(itemCost({ price: 100 }, 1, null)).toBe(115);
+    expect(itemCost({ price: 100 }, 5, null)).toBeGreaterThan(itemCost({ price: 100 }, 4, null));
+  });
+
+  it('takes an active coupon off the item price', () => {
+    expect(itemCost({ price: 200 }, 0, 'coupon10')).toBe(180);
+    expect(itemCost({ price: 200 }, 0, 'coupon20')).toBe(160);
+  });
+
+  it('values a cart at the base price of each item, whatever was paid', () => {
+    expect(cartValue([item(9.5, 2), item(100)])).toBe(120);
   });
 });

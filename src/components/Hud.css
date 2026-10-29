@@ -75,6 +75,7 @@
 
 .coin-counter__rate {
   font-size: 0.78rem;
+  white-space: nowrap;
   font-weight: 700;
   color: var(--text-soft);
   font-variant-numeric: tabular-nums;
@@ -136,8 +137,14 @@
   gap: 10px;
 }
 
-.hud__icon-button {
+.hud__utility {
   grid-area: sound;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hud__icon-button {
   display: grid;
   place-items: center;
   width: 44px;
@@ -147,6 +154,12 @@
   background: var(--surface);
   box-shadow: 3px 3px 0 var(--line);
   cursor: pointer;
+}
+
+.hud__help {
+  font-size: 1.3rem;
+  font-weight: 800;
+  line-height: 1;
 }
 
 .hud__icon-button svg {
@@ -240,5 +253,27 @@
   .hud__icon-button {
     width: 40px;
     height: 40px;
+  }
+
+  .mode-toggle__option {
+    padding-inline: 10px;
+    font-size: 0.92rem;
+  }
+
+  .coin-counter {
+    padding-inline: 8px 12px;
+  }
+
+  .coin-counter__unit {
+    display: none;
+  }
+
+  .coin-counter__value {
+    font-size: 1.2rem;
+  }
+
+  .hud__cart {
+    gap: 6px;
+    padding-inline: 10px 12px;
   }
 }

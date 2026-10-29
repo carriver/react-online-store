@@ -9,7 +9,9 @@ export const VIBES_BONUS_PER_LEVEL = 0.25;
 export const STAMP_BONUS = 0.1;
 export const BASE_OFFLINE_HOURS = 1;
 export const MAX_HOPPER_LEVEL = 7;
-export const STAMP_DOLLAR_SCALE = 10;
+export const STAMP_VALUE_SCALE = 10;
+export const STARTING_COINS = 20;
+export const COPY_PRICE_GROWTH = 1.15;
 
 export const PERKS: Record<PerkId, { name: string; blurb: string; baseCost: number; growth: number; maxLevel: number }> = {
   vibes: { name: 'Cozier vibes', blurb: '+25% income per level', baseCost: 50, growth: 1.6, maxLevel: 20 },
@@ -32,7 +34,15 @@ export const THEMES: Record<ThemeId, { name: string; cost: number }> = {
 // Square root keeps a $999 drive from dwarfing a $7 ring: the cheap things still feel worth owning.
 export const itemYieldPerSecond = (price: number) => Math.round((0.2 + Math.sqrt(price) / 5) * 10) / 10;
 
-export const discoveryBonus = (product: Product) => Math.ceil(product.price / 4) + 10;
+export const basePrice = (product: Pick<Product, 'price'>) => Math.ceil(product.price);
+
+// Each extra copy costs more, or buying the cheapest shirt fifty times would outrun every other choice.
+export const itemCost = (product: Pick<Product, 'price'>, owned: number, coupon: CouponId | null) => {
+  const percentOff = coupon ? COUPONS[coupon].percentOff : 0;
+  return Math.ceil(basePrice(product) * COPY_PRICE_GROWTH ** owned * (1 - percentOff / 100));
+};
+
+export const cartValue = (cartItems: CartItemType[]) => cartItems.reduce((total, item) => total + item.amount * basePrice(item), 0);
 
 export const incomeMultiplier = (vibesLevel: number, stamps: number) =>
   (1 + VIBES_BONUS_PER_LEVEL * vibesLevel) * (1 + STAMP_BONUS * stamps);
@@ -52,7 +62,4 @@ export const offlineEarnings = (elapsedSeconds: number, ratePerSecond: number, h
   Math.floor(Math.min(Math.max(elapsedSeconds, 0), offlineCapSeconds(hopperLevel)) * ratePerSecond);
 
 // Square root again: a big haul should feel rewarding without one checkout breaking the economy.
-export const stampsForCheckout = (totalDollars: number) => Math.max(1, Math.floor(Math.sqrt(totalDollars / STAMP_DOLLAR_SCALE)));
-
-export const discountedTotal = (totalDollars: number, coupon: CouponId | null) =>
-  coupon ? totalDollars * (1 - COUPONS[coupon].percentOff / 100) : totalDollars;
+export const stampsForCheckout = (value: number) => Math.max(1, Math.floor(Math.sqrt(value / STAMP_VALUE_SCALE)));

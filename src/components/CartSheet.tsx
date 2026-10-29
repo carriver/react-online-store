@@ -1,19 +1,98 @@
-import { cartTotal, countItems } from '../cart';
-import { formatMoney } from '../catalog';
-import { COUPONS, STAMP_BONUS, discountedTotal, stampsForCheckout, type CouponId } from '../game/economy';
+import { countItems, refundForOne, type CartItemType } from '../cart';
+import { formatCoins, formatCoinsPerSecond } from '../catalog';
+import { COUPONS, STAMP_BONUS, cartValue, itemYieldPerSecond, stampsForCheckout, type CouponId } from '../game/economy';
 import { useGame, useGameSelector } from '../game/GameProvider';
+import { nextItemCost } from '../game/state';
 import Sheet from './Sheet';
 import './CartSheet.css';
 
-function CartSheet({ open, onClose, onOpenPerks }: { open: boolean; onClose: () => void; onOpenPerks: () => void }) {
-  const cart = useGameSelector((state) => state.cart);
+function CartLine({ item }: { item: CartItemType }) {
+  const { dispatch } = useGame();
+  const cost = useGameSelector((state) => nextItemCost(state, item));
+  const affordable = useGameSelector((state) => state.coins >= cost);
+  const refund = refundForOne(item);
+
+  return (
+    <li className='cart-line'>
+      <img src={item.image} alt='' width='56' height='56' loading='lazy' decoding='async' />
+      <div className='cart-line__info'>
+        <h3>{item.title}</h3>
+        <p>
+          {formatCoins(item.paid)} coins spent · earns <b>{formatCoinsPerSecond(item.amount * itemYieldPerSecond(item.price))}</b>
+        </p>
+      </div>
+      <div className='stepper' role='group' aria-label={`Quantity of ${item.title}`}>
+        <button
+          type='button'
+          onClick={() => dispatch({ type: 'remove', productId: item.id })}
+          aria-label={`Sell one ${item.title} back for ${formatCoins(refund)} coins`}>
+          −
+        </button>
+        <output aria-live='polite'>{item.amount}</output>
+        <button
+          type='button'
+          disabled={!affordable}
+          onClick={() => dispatch({ type: 'buy', product: item })}
+          aria-label={`Buy one more ${item.title} for ${formatCoins(cost)} coins`}>
+          +
+        </button>
+      </div>
+    </li>
+  );
+}
+
+function Coupons({ onOpenPerks }: { onOpenPerks: () => void }) {
   const coupons = useGameSelector((state) => state.coupons);
   const appliedCoupon = useGameSelector((state) => state.appliedCoupon);
   const { dispatch, sfx } = useGame();
-  const subtotal = cartTotal(cart);
-  const total = discountedTotal(subtotal, appliedCoupon);
   const ownedCoupons = [...new Set(coupons)];
   const countOf = (coupon: CouponId) => coupons.filter((owned) => owned === coupon).length;
+
+  return (
+    <section className='cart-coupons' aria-label='Coupons'>
+      {appliedCoupon ? (
+        <p className='cart-coupons__active'>
+          <b>{COUPONS[appliedCoupon].name}</b> coupon active: every item you buy costs {COUPONS[appliedCoupon].percentOff}% less until you
+          check out.
+        </p>
+      ) : null}
+      {ownedCoupons.length > 0 ? (
+        <div className='cart-coupons__list' role='group' aria-label='Saved coupons'>
+          {ownedCoupons.map((coupon) => (
+            <button
+              key={coupon}
+              type='button'
+              className='coupon-chip'
+              disabled={appliedCoupon !== null}
+              onClick={() => {
+                sfx('buy');
+                dispatch({ type: 'applyCoupon', coupon });
+              }}>
+              Use {COUPONS[coupon].name}
+              {countOf(coupon) > 1 ? ` ×${countOf(coupon)}` : ''}
+            </button>
+          ))}
+        </div>
+      ) : null}
+      {!appliedCoupon && ownedCoupons.length === 0 ? (
+        <p className='cart-coupons__hint'>
+          No coupons yet.{' '}
+          <button type='button' className='link-button' onClick={onOpenPerks}>
+            Spend coins on one
+          </button>{' '}
+          to make items cheaper.
+        </p>
+      ) : null}
+    </section>
+  );
+}
+
+function CartSheet({ open, onClose, onOpenPerks }: { open: boolean; onClose: () => void; onOpenPerks: () => void }) {
+  const cart = useGameSelector((state) => state.cart);
+  const { dispatch, sfx } = useGame();
+  const value = cartValue(cart);
+  const spent = cart.reduce((total, item) => total + item.paid, 0);
+  const stamps = stampsForCheckout(value);
 
   const checkout = () => {
     sfx('buy');
@@ -35,73 +114,31 @@ function CartSheet({ open, onClose, onOpenPerks }: { open: boolean; onClose: () 
       ) : (
         <ul className='cart-list'>
           {cart.map((item) => (
-            <li key={item.id} className='cart-line'>
-              <img src={item.image} alt='' width='56' height='56' loading='lazy' decoding='async' />
-              <div className='cart-line__info'>
-                <h3>{item.title}</h3>
-                <p>
-                  {formatMoney(item.price)} each · <b>{formatMoney(item.price * item.amount)}</b>
-                </p>
-              </div>
-              <div className='stepper' role='group' aria-label={`Quantity of ${item.title}`}>
-                <button type='button' onClick={() => dispatch({ type: 'remove', productId: item.id })} aria-label={`Remove one ${item.title}`}>
-                  −
-                </button>
-                <output aria-live='polite'>{item.amount}</output>
-                <button type='button' onClick={() => dispatch({ type: 'add', product: item })} aria-label={`Add one more ${item.title}`}>
-                  +
-                </button>
-              </div>
-            </li>
+            <CartLine key={item.id} item={item} />
           ))}
         </ul>
       )}
 
-      <section className='cart-coupons' aria-label='Coupons'>
-        {ownedCoupons.length === 0 ? (
-          <p className='cart-coupons__hint'>
-            No coupons yet.{' '}
-            <button type='button' className='link-button' onClick={onOpenPerks}>
-              Spend coins on one
-            </button>
-            .
-          </p>
-        ) : (
-          <div className='cart-coupons__list' role='group' aria-label='Apply a coupon'>
-            {ownedCoupons.map((coupon) => (
-              <button
-                key={coupon}
-                type='button'
-                className='coupon-chip'
-                aria-pressed={appliedCoupon === coupon}
-                onClick={() => dispatch({ type: 'applyCoupon', coupon: appliedCoupon === coupon ? null : coupon })}>
-                {COUPONS[coupon].name}
-                {countOf(coupon) > 1 ? ` ×${countOf(coupon)}` : ''}
-              </button>
-            ))}
-          </div>
-        )}
-      </section>
-
-      <div className='cart-totals'>
-        <p>
-          <span>Subtotal ({countItems(cart)} items)</span>
-          <span>{formatMoney(subtotal)}</span>
-        </p>
-        {appliedCoupon ? (
-          <p className='cart-totals__discount'>
-            <span>Coupon {COUPONS[appliedCoupon].name}</span>
-            <span>−{formatMoney(subtotal - total)}</span>
-          </p>
-        ) : null}
-        <h2 className='cart-totals__total'>Total: {formatMoney(total)}</h2>
-      </div>
+      <Coupons onOpenPerks={onOpenPerks} />
 
       {cart.length > 0 ? (
         <>
+          <div className='cart-totals'>
+            <p>
+              <span>Items ({countItems(cart)})</span>
+              <span>{formatCoins(value)} coins of stuff</span>
+            </p>
+            <p>
+              <span>You spent</span>
+              <span>{formatCoins(spent)} coins</span>
+            </p>
+            <h2 className='cart-totals__total'>
+              Checkout earns {stamps} stamp{stamps === 1 ? '' : 's'}
+            </h2>
+          </div>
           <p className='cart-stamps'>
-            Checking out earns <b>{stampsForCheckout(total)} stamp{stampsForCheckout(total) === 1 ? '' : 's'}</b>, each a permanent +
-            {STAMP_BONUS * 100}% income. Your room empties, your coins stay.
+            Each stamp is a permanent +{STAMP_BONUS * 100}% income. Checking out empties your room and the coins you spent are gone, but
+            your coin balance stays.
           </p>
           <button type='button' className='chunky chunky--primary cart-checkout' onClick={checkout}>
             Check out (nothing ships)

@@ -1,7 +1,7 @@
 import { Link } from 'react-router';
 
 import { countItems } from '../cart';
-import { formatCoins, formatRate } from '../catalog';
+import { formatCoins, formatCoinsPerSecond, formatRateNumber } from '../catalog';
 import { useGame, useGameSelector } from '../game/GameProvider';
 import { currentIncome, type Mode } from '../game/state';
 import CoinIcon from './CoinIcon';
@@ -16,13 +16,14 @@ function CoinCounter() {
   const coins = useGameSelector((state) => Math.floor(state.coins));
   const rate = useGameSelector(currentIncome);
   return (
-    <div className='coin-counter' aria-label={`${formatCoins(coins)} coins, earning ${formatRate(rate)} per second`}>
+    <div className='coin-counter' aria-label={`${formatCoins(coins)} coins, earning ${formatCoinsPerSecond(rate)}`}>
       <CoinIcon />
       <span className='coin-counter__value' aria-hidden='true'>
         {formatCoins(coins)}
       </span>
       <span className='coin-counter__rate' aria-hidden='true'>
-        {formatRate(rate)}
+        +{formatRateNumber(rate)}
+        <span className='coin-counter__unit'> coins</span>/sec
       </span>
     </div>
   );
@@ -74,7 +75,7 @@ function SoundToggle() {
   );
 }
 
-function Hud({ onOpenCart, onOpenPerks }: { onOpenCart: () => void; onOpenPerks: () => void }) {
+function Hud({ onOpenCart, onOpenPerks, onOpenGuide }: { onOpenCart: () => void; onOpenPerks: () => void; onOpenGuide: () => void }) {
   const itemCount = useGameSelector((state) => countItems(state.cart));
   return (
     <header className='hud'>
@@ -86,7 +87,12 @@ function Hud({ onOpenCart, onOpenPerks }: { onOpenCart: () => void; onOpenPerks:
       </Link>
       <CoinCounter />
       <ModeToggle />
-      <SoundToggle />
+      <div className='hud__utility'>
+        <button type='button' className='hud__icon-button hud__help' aria-label='How to play' onClick={onOpenGuide}>
+          ?
+        </button>
+        <SoundToggle />
+      </div>
       <div className='hud__actions'>
         <button type='button' className='chunky chunky--butter hud__perks' onClick={onOpenPerks}>
           <svg viewBox='0 0 24 24' aria-hidden='true' className='hud__perks-icon'>

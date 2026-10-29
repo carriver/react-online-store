@@ -159,6 +159,14 @@
 }
 
 .catalog-row__price {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.catalog-row__button {
+  min-width: 92px;
   font-variant-numeric: tabular-nums;
 }

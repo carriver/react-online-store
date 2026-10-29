@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatCoins, machineCode, machineRows, roomSlots } from './catalog';
+import { formatCoins, formatCoinsPerSecond, machineCode, machineRows, roomSlots } from './catalog';
 
 const product = (id: number, category: string) => ({ id, category, title: '', description: '', price: 1, image: '' });
 
@@ -23,6 +23,11 @@ describe('catalog', () => {
   it('overflows a full zone onto the floor', () => {
     const rings = Array.from({ length: 5 }, (_, index) => product(index + 1, 'jewelery'));
     expect(roomSlots(rings).get(5)?.zone).toBe('floor');
+  });
+
+  it('names the unit when showing what something earns per second', () => {
+    expect(formatCoinsPerSecond(2.34)).toBe('2.3 coins/sec');
+    expect(formatCoinsPerSecond(1500)).toBe('1,500 coins/sec');
   });
 
   it('abbreviates coin counts only once they get large', () => {
