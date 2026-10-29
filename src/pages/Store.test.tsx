@@ -92,6 +92,17 @@ describe('Store', () => {
     expect(screen.getByText(/everything until checkout/)).toHaveTextContent('20% off everything until checkout');
   });
 
+  it('saves a purchase right away instead of waiting for the timed save', async () => {
+    startWith({ coins: 50 });
+    respondWith({ ok: true, status: 200, json: async () => products });
+    renderStore();
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Buy Shirt for 11 coins' }));
+    const saved = JSON.parse(window.localStorage.getItem(SAVE_KEY) ?? '{}');
+    expect(saved.cart).toEqual([expect.objectContaining({ id: 2, amount: 1, paid: 11 })]);
+    expect(saved.coins).toBeLessThan(40);
+  });
+
   it('will not sell an item the player cannot afford', async () => {
     startWith({ coins: 20 });
     respondWith({ ok: true, status: 200, json: async () => products });

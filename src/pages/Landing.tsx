@@ -8,6 +8,8 @@ import './Landing.css';
 
 const preloadStore = () => import('./Store');
 
+const SQUIGGLE_PATH = 'M8 16c10-13 20-13 29 0s19 13 29 0 19-13 29 0 19 13 29 0';
+
 const titleWords = ['FAKE', 'ONLINE', 'STORE'].map((word, wordIndex, words) => {
   const firstOrder = words.slice(0, wordIndex).join('').length;
   return word.split('').map((letter, letterIndex) => ({ letter, order: firstOrder + letterIndex }));
@@ -86,7 +88,10 @@ function Landing() {
       <div className='landing__shapes' aria-hidden='true'>
         <span className='shape shape--blob' />
         <span className='shape shape--ring' />
-        <span className='shape shape--squiggle' />
+        <svg className='shape shape--squiggle' viewBox='0 0 132 32' focusable='false'>
+          <path className='squiggle__outline' d={SQUIGGLE_PATH} />
+          <path className='squiggle__line' d={SQUIGGLE_PATH} />
+        </svg>
         <CoinIcon className='shape shape--coin' />
         <CoinIcon className='shape shape--coin shape--coin-2' />
       </div>
@@ -108,8 +113,8 @@ function Landing() {
           ))}
         </h1>
         <p className='landing__lede'>
-          Furnish a cozy room or work a vending machine. Everything you collect earns coins, even while you’re away, and coins buy
-          coupons, perks and paint.
+          Furnish a cozy room or work a vending machine. Spend coins on items, and everything you own earns more coins, even
+          while you’re away.
         </p>
 
         <div className='landing__doors'>

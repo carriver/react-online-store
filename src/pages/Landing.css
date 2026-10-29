@@ -187,10 +187,27 @@
   top: 12%;
   right: 8%;
   width: 120px;
-  height: 24px;
-  background: radial-gradient(circle at 10px 12px, transparent 8px, var(--plum) 9px 13px, transparent 14px) 0 0 / 20px 24px repeat-x;
+  height: 30px;
+  overflow: visible;
   rotate: -14deg;
   animation-delay: -5s;
+}
+
+.squiggle__outline,
+.squiggle__line {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.squiggle__outline {
+  stroke: var(--line);
+  stroke-width: 13;
+}
+
+.squiggle__line {
+  stroke: var(--plum);
+  stroke-width: 7;
 }
 
 .shape--coin {

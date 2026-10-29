@@ -7,6 +7,20 @@ import { gameReducer, type GameAction, type GameState } from './state';
 const TICK_MS = 250;
 const SAVE_MS = 3000;
 
+// Coins change on every tick, so they ride the timed save; anything bought or chosen saves at once.
+const SAVE_RIGHT_AWAY: (keyof GameState)[] = [
+  'cart',
+  'perks',
+  'appliedCoupon',
+  'ownedThemes',
+  'theme',
+  'stamps',
+  'awayEarnings',
+  'mode',
+  'muted',
+  'seenGuide',
+];
+
 export type Pop = { id: number; text: string; x: number; y: number; tone: 'coin' | 'info' };
 
 type GameStore = {
@@ -94,11 +108,18 @@ export function GameProvider({ children, now = Date.now }: { children: ReactNode
   useEffect(() => {
     const persist = () => saveGame(store.getState());
     const saver = window.setInterval(persist, SAVE_MS);
+    let previous = store.getState();
+    const unsubscribe = store.subscribe(() => {
+      const current = store.getState();
+      if (SAVE_RIGHT_AWAY.some((key) => current[key] !== previous[key])) persist();
+      previous = current;
+    });
     const persistWhenHidden = () => document.visibilityState === 'hidden' && persist();
     window.addEventListener('pagehide', persist);
     document.addEventListener('visibilitychange', persistWhenHidden);
     return () => {
       window.clearInterval(saver);
+      unsubscribe();
       window.removeEventListener('pagehide', persist);
       document.removeEventListener('visibilitychange', persistWhenHidden);
       persist();
