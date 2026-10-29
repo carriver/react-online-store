@@ -58,10 +58,12 @@ describe('gameReducer', () => {
     expect(state.cart[0].paid).toBe(90);
   });
 
-  it('saves extra coupons for later and allows only one active at a time', () => {
-    const state = play(start({ coins: 1200 }), { type: 'buyCoupon', coupon: 'coupon10' }, { type: 'buyCoupon', coupon: 'coupon10' });
-    expect(state.coupons).toEqual(['coupon10']);
-    expect(play(state, { type: 'applyCoupon', coupon: 'coupon10' })).toBe(state);
+  it('replaces the active coupon with a bigger one, and refuses smaller or equal ones', () => {
+    const withTen = play(start({ coins: 5000 }), { type: 'buyCoupon', coupon: 'coupon10' });
+    expect(play(withTen, { type: 'buyCoupon', coupon: 'coupon10' })).toBe(withTen);
+    expect(play(withTen, { type: 'buyCoupon', coupon: 'coupon5' })).toBe(withTen);
+    const upgraded = play(withTen, { type: 'buyCoupon', coupon: 'coupon20' });
+    expect(upgraded).toMatchObject({ appliedCoupon: 'coupon20', coins: 5000 - 600 - 2500 });
   });
 
   it('only buys what the player can afford', () => {
@@ -87,9 +89,9 @@ describe('gameReducer', () => {
     );
     expect(state.cart).toEqual([]);
     expect(state.appliedCoupon).toBeNull();
-    expect(state.coins).toBe(900 - 600 - 90 - 104);
+    expect(state.coins).toBe(900 - 600 - 90 - 103);
     expect(state.stamps).toBe(4);
-    expect(state.lastReceipt).toMatchObject({ number: 1, value: 200, spent: 194, coupon: 'coupon10', stampsEarned: 4, printedAt: 42 });
+    expect(state.lastReceipt).toMatchObject({ number: 1, value: 200, spent: 193, coupon: 'coupon10', stampsEarned: 4, printedAt: 42 });
   });
 
   it('remembers that the guide was read', () => {

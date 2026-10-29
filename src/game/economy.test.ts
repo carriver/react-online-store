@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   cartValue,
   incomePerSecond,
+  isCouponUpgrade,
   itemCost,
   itemYieldPerSecond,
   offlineEarnings,
@@ -52,6 +53,18 @@ describe('economy', () => {
   it('takes an active coupon off the item price', () => {
     expect(itemCost({ price: 200 }, 0, 'coupon10')).toBe(180);
     expect(itemCost({ price: 200 }, 0, 'coupon20')).toBe(160);
+  });
+
+  it('always saves at least one coin with a coupon, even on the cheapest item', () => {
+    expect(itemCost({ price: 7.95 }, 0, 'coupon5')).toBe(7);
+    expect(itemCost({ price: 9.85 }, 0, 'coupon5')).toBe(9);
+  });
+
+  it('only lets a bigger coupon replace the active one', () => {
+    expect(isCouponUpgrade('coupon5', null)).toBe(true);
+    expect(isCouponUpgrade('coupon20', 'coupon5')).toBe(true);
+    expect(isCouponUpgrade('coupon5', 'coupon5')).toBe(false);
+    expect(isCouponUpgrade('coupon10', 'coupon20')).toBe(false);
   });
 
   it('values a cart at the base price of each item, whatever was paid', () => {

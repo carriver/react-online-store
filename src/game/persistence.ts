@@ -43,7 +43,12 @@ export const parseSave = (raw: string | null, now: number): GameState => {
 
   const perks = isRecord(data.perks) ? data.perks : {};
   const ownedThemes = listOf(data.ownedThemes, (theme): theme is ThemeId => isKeyOf(THEMES, theme));
-  const coupons = listOf(data.coupons, (coupon): coupon is CouponId => isKeyOf(COUPONS, coupon));
+  // Older saves could hold spare coupons; the best one becomes the active coupon.
+  const savedCoupons = listOf(data.coupons, (coupon): coupon is CouponId => isKeyOf(COUPONS, coupon));
+  const bestSavedCoupon = savedCoupons.reduce<CouponId | null>(
+    (best, coupon) => (best === null || COUPONS[coupon].percentOff > COUPONS[best].percentOff ? coupon : best),
+    null,
+  );
   const theme = isKeyOf(THEMES, data.theme) && ownedThemes.includes(data.theme) ? data.theme : 'sunny';
   const lastTickAt = finiteOr(data.lastTickAt, now);
 
@@ -59,8 +64,7 @@ export const parseSave = (raw: string | null, now: number): GameState => {
         Math.min(Math.floor(finiteOr(perks[perk], 0)), PERKS[perk].maxLevel),
       ]),
     ) as Record<PerkId, number>,
-    coupons,
-    appliedCoupon: isKeyOf(COUPONS, data.appliedCoupon) ? data.appliedCoupon : null,
+    appliedCoupon: isKeyOf(COUPONS, data.appliedCoupon) ? data.appliedCoupon : bestSavedCoupon,
     ownedThemes: ownedThemes.includes('sunny') ? ownedThemes : ['sunny', ...ownedThemes],
     theme,
     stamps: Math.floor(finiteOr(data.stamps, 0)),

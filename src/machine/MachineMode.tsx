@@ -3,7 +3,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState, type MouseEv
 import { amountOwned, type Product } from '../cart';
 import { formatCoins, formatCoinsPerSecond, machineCode, machineRows, MACHINE_COLUMNS } from '../catalog';
 import CoinIcon from '../components/CoinIcon';
-import { coinsPerTap, itemCost } from '../game/economy';
+import { COUPONS, coinsPerTap, itemCost } from '../game/economy';
 import { centerOf, useGame, useGameSelector } from '../game/GameProvider';
 import { currentIncome } from '../game/state';
 import './machine.css';
@@ -92,7 +92,8 @@ function MachineMode({ products, onOpenCart }: { products: Product[]; onOpenCart
 
   const costOf = (index: number) => itemCost(products[index], amountOwned(cart, products[index].id), coupon);
 
-  const describe = (index: number) => `${machineCode(index)} · ${formatCoins(costOf(index))} COINS · PRESS VEND`;
+  const describe = (index: number) =>
+    `${machineCode(index)} · ${formatCoins(costOf(index))} COINS${coupon ? ` (${COUPONS[coupon].percentOff}% OFF)` : ''} · PRESS VEND`;
 
   const shortfall = (index: number) => Math.max(0, Math.ceil(costOf(index) - getState().coins));
 

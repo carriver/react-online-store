@@ -37,10 +37,19 @@ export const itemYieldPerSecond = (price: number) => Math.round((0.2 + Math.sqrt
 export const basePrice = (product: Pick<Product, 'price'>) => Math.ceil(product.price);
 
 // Each extra copy costs more, or buying the cheapest shirt fifty times would outrun every other choice.
+export const listPrice = (product: Pick<Product, 'price'>, owned: number) => Math.ceil(basePrice(product) * COPY_PRICE_GROWTH ** owned);
+
+// At least one coin off, so a coupon never rounds away to nothing on a cheap item.
+export const couponDiscount = (price: number, coupon: CouponId | null) =>
+  coupon ? Math.max(1, Math.round((price * COUPONS[coupon].percentOff) / 100)) : 0;
+
 export const itemCost = (product: Pick<Product, 'price'>, owned: number, coupon: CouponId | null) => {
-  const percentOff = coupon ? COUPONS[coupon].percentOff : 0;
-  return Math.ceil(basePrice(product) * COPY_PRICE_GROWTH ** owned * (1 - percentOff / 100));
+  const price = listPrice(product, owned);
+  return price - couponDiscount(price, coupon);
 };
+
+export const isCouponUpgrade = (coupon: CouponId, active: CouponId | null) =>
+  active === null || COUPONS[coupon].percentOff > COUPONS[active].percentOff;
 
 export const cartValue = (cartItems: CartItemType[]) => cartItems.reduce((total, item) => total + item.amount * basePrice(item), 0);
 

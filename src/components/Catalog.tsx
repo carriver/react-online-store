@@ -2,7 +2,7 @@ import type { MouseEvent, ReactNode } from 'react';
 
 import type { Product } from '../cart';
 import { categoryLabel, formatCoins, formatCoinsPerSecond } from '../catalog';
-import { itemYieldPerSecond } from '../game/economy';
+import { COUPONS, itemYieldPerSecond, listPrice } from '../game/economy';
 import { centerOf, useGame, useGameSelector } from '../game/GameProvider';
 import { nextItemCost } from '../game/state';
 import CoinIcon from './CoinIcon';
@@ -11,6 +11,7 @@ import './Catalog.css';
 function CatalogRow({ product, amount, isNew }: { product: Product; amount: number; isNew: boolean }) {
   const { dispatch, sfx, pop } = useGame();
   const cost = useGameSelector((state) => nextItemCost(state, product));
+  const fullPrice = listPrice(product, amount);
   const shortBy = useGameSelector((state) => Math.max(0, Math.ceil(cost - state.coins)));
 
   const buy = (event: MouseEvent<HTMLButtonElement>) => {
@@ -33,6 +34,12 @@ function CatalogRow({ product, amount, isNew }: { product: Product; amount: numb
       </div>
       <div className='catalog-row__buy'>
         <span className='catalog-row__price'>
+          {cost < fullPrice ? (
+            <s className='catalog-row__was'>
+              <span className='visually-hidden'>was </span>
+              {formatCoins(fullPrice)}
+            </s>
+          ) : null}
           <CoinIcon />
           {formatCoins(cost)}
         </span>
@@ -52,6 +59,7 @@ function CatalogRow({ product, amount, isNew }: { product: Product; amount: numb
 function Catalog({ products, totalProducts, filters }: { products: Product[]; totalProducts: number; filters?: ReactNode }) {
   const cart = useGameSelector((state) => state.cart);
   const discovered = useGameSelector((state) => state.discovered);
+  const appliedCoupon = useGameSelector((state) => state.appliedCoupon);
   const amounts = new Map(cart.map((item) => [item.id, item.amount]));
   const found = discovered.length;
 
@@ -67,6 +75,11 @@ function Catalog({ products, totalProducts, filters }: { products: Product[]; to
             <span style={{ transform: `scaleX(${totalProducts ? found / totalProducts : 0})` }} />
           </span>
         </div>
+        {appliedCoupon ? (
+          <p className='catalog__coupon'>
+            <b>{COUPONS[appliedCoupon].name}</b> everything until checkout
+          </p>
+        ) : null}
         {filters}
       </header>
       <ul className='catalog__list'>

@@ -74,6 +74,24 @@ describe('Store', () => {
     expect(within(cart).getByRole('heading', { name: 'Checkout earns 1 stamp' })).toBeInTheDocument();
   });
 
+  it('drops item prices when a coupon is bought, and only a bigger coupon replaces it', async () => {
+    startWith({ coins: 5000 });
+    respondWith({ ok: true, status: 200, json: async () => products });
+    renderStore();
+
+    await screen.findByRole('button', { name: 'Buy Watch for 50 coins' });
+    await userEvent.click(screen.getByRole('button', { name: /^Perks/ }));
+    const perks = screen.getByRole('dialog', { name: 'Perks' });
+    await userEvent.click(within(perks).getByRole('button', { name: 'Buy a 10% off coupon' }));
+    expect(within(perks).getByRole('button', { name: 'Buy a 5% off coupon' })).toBeDisabled();
+    await userEvent.click(within(perks).getByRole('button', { name: 'Upgrade to a 20% off coupon' }));
+    await userEvent.click(within(perks).getByRole('button', { name: 'Close perks' }));
+
+    expect(screen.getByRole('button', { name: 'Buy Watch for 40 coins' })).toBeInTheDocument();
+    expect(screen.getAllByText('was', { exact: false })).toHaveLength(products.length);
+    expect(screen.getByText(/everything until checkout/)).toHaveTextContent('20% off everything until checkout');
+  });
+
   it('will not sell an item the player cannot afford', async () => {
     startWith({ coins: 20 });
     respondWith({ ok: true, status: 200, json: async () => products });

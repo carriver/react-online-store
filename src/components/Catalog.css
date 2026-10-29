@@ -166,6 +166,24 @@
   font-variant-numeric: tabular-nums;
 }
 
+.catalog-row__was {
+  margin-right: 2px;
+  color: var(--text-soft);
+  font-weight: 600;
+  font-size: 0.85em;
+}
+
+.catalog__coupon {
+  justify-self: start;
+  padding: 3px 12px;
+  border: 2px dashed var(--line);
+  border-radius: 10px;
+  background: var(--mint);
+  color: #10251a;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
 .catalog-row__button {
   min-width: 92px;
   font-variant-numeric: tabular-nums;

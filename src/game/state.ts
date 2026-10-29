@@ -7,6 +7,7 @@ import {
   cartValue,
   coinsPerTap,
   incomePerSecond,
+  isCouponUpgrade,
   itemCost,
   offlineEarnings,
   perkCost,
@@ -33,8 +34,7 @@ export type GameState = {
   cart: CartItemType[];
   discovered: number[];
   perks: Record<PerkId, number>;
-  coupons: CouponId[];
-  // Activating a coupon uses it up; it then discounts every purchase until the next checkout.
+  // One coupon at a time: it discounts every purchase until the next checkout, and a bigger one replaces it.
   appliedCoupon: CouponId | null;
   ownedThemes: ThemeId[];
   theme: ThemeId;
@@ -55,7 +55,6 @@ export type GameAction =
   | { type: 'remove'; productId: number }
   | { type: 'buyPerk'; perk: PerkId }
   | { type: 'buyCoupon'; coupon: CouponId }
-  | { type: 'applyCoupon'; coupon: CouponId }
   | { type: 'chooseTheme'; theme: ThemeId }
   | { type: 'checkout'; now: number }
   | { type: 'dismissReceipt' }
@@ -72,7 +71,6 @@ export const createInitialState = (now: number): GameState => ({
   cart: [],
   discovered: [],
   perks: { vibes: 0, thumb: 0, hopper: 0 },
-  coupons: [],
   appliedCoupon: null,
   ownedThemes: ['sunny'],
   theme: 'sunny',
@@ -130,21 +128,10 @@ const buyPerk = (state: GameState, perk: PerkId): GameState => {
   return coins === null ? state : { ...state, coins, perks: { ...state.perks, [perk]: level + 1 } };
 };
 
-const withoutOne = <T,>(list: T[], value: T) => {
-  const index = list.indexOf(value);
-  return index === -1 ? list : [...list.slice(0, index), ...list.slice(index + 1)];
-};
-
 const buyCoupon = (state: GameState, coupon: CouponId): GameState => {
-  const coins = spend(state, COUPONS[coupon].cost);
-  if (coins === null) return state;
-  return state.appliedCoupon ? { ...state, coins, coupons: [...state.coupons, coupon] } : { ...state, coins, appliedCoupon: coupon };
+  const coins = isCouponUpgrade(coupon, state.appliedCoupon) ? spend(state, COUPONS[coupon].cost) : null;
+  return coins === null ? state : { ...state, coins, appliedCoupon: coupon };
 };
-
-const applyCoupon = (state: GameState, coupon: CouponId): GameState =>
-  state.appliedCoupon || !state.coupons.includes(coupon)
-    ? state
-    : { ...state, coupons: withoutOne(state.coupons, coupon), appliedCoupon: coupon };
 
 const chooseTheme = (state: GameState, theme: ThemeId): GameState => {
   if (state.ownedThemes.includes(theme)) return { ...state, theme };
@@ -189,8 +176,6 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
       return buyPerk(state, action.perk);
     case 'buyCoupon':
       return buyCoupon(state, action.coupon);
-    case 'applyCoupon':
-      return applyCoupon(state, action.coupon);
     case 'chooseTheme':
       return chooseTheme(state, action.theme);
     case 'checkout':

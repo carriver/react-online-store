@@ -1,7 +1,7 @@
 import type { MouseEvent } from 'react';
 
 import { formatCoins } from '../catalog';
-import { COUPONS, PERKS, THEMES, perkCost, type CouponId, type PerkId, type ThemeId } from '../game/economy';
+import { COUPONS, PERKS, THEMES, isCouponUpgrade, perkCost, type CouponId, type PerkId, type ThemeId } from '../game/economy';
 import { centerOf, useGame, useGameSelector } from '../game/GameProvider';
 import CoinIcon from './CoinIcon';
 import Sheet from './Sheet';
@@ -20,7 +20,6 @@ function Price({ cost, coins }: { cost: number; coins: number }) {
 function PerksSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const coins = useGameSelector((state) => Math.floor(state.coins));
   const perks = useGameSelector((state) => state.perks);
-  const coupons = useGameSelector((state) => state.coupons);
   const appliedCoupon = useGameSelector((state) => state.appliedCoupon);
   const ownedThemes = useGameSelector((state) => state.ownedThemes);
   const theme = useGameSelector((state) => state.theme);
@@ -73,32 +72,35 @@ function PerksSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
       <section className='perks__section' aria-labelledby='perks-coupons'>
         <h3 id='perks-coupons'>Coupons</h3>
         <p className='perks__note'>
-          A coupon takes its discount off every item you buy until your next checkout. One at a time; extras wait in your cart. Yes, the
-          discount is as real as the store.
+          A coupon takes its discount off every item you buy until your next checkout. One at a time: a bigger coupon replaces the one you
+          have. Yes, the discount is as real as the store.
         </p>
         {(Object.keys(COUPONS) as CouponId[]).map((coupon) => {
-          const owned = coupons.filter((entry) => entry === coupon).length;
+          const upgrade = isCouponUpgrade(coupon, appliedCoupon);
           return (
             <div key={coupon} className='perk perk--coupon'>
               <div>
                 <h4>
                   {COUPONS[coupon].name}
                   {appliedCoupon === coupon ? <span className='perk__level'>Active</span> : null}
-                  {owned ? <span className='perk__level'>{owned} saved</span> : null}
                 </h4>
               </div>
               <div className='perk__buy'>
-                <Price cost={COUPONS[coupon].cost} coins={coins} />
+                {upgrade ? (
+                  <Price cost={COUPONS[coupon].cost} coins={coins} />
+                ) : (
+                  <span className='perk__price'>{appliedCoupon === coupon ? 'Until checkout' : 'Yours is bigger'}</span>
+                )}
                 <button
                   type='button'
                   className='chunky chunky--small chunky--mint'
-                  disabled={coins < COUPONS[coupon].cost}
+                  disabled={!upgrade || coins < COUPONS[coupon].cost}
                   onClick={(event) => {
                     dispatch({ type: 'buyCoupon', coupon });
-                    celebrate(event, 'Clipped!');
+                    celebrate(event, appliedCoupon ? 'Upgraded!' : 'Clipped!');
                   }}
-                  aria-label={`Buy a ${COUPONS[coupon].name} coupon`}>
-                  Buy
+                  aria-label={`${appliedCoupon && upgrade ? 'Upgrade to' : 'Buy'} a ${COUPONS[coupon].name} coupon`}>
+                  {appliedCoupon && upgrade ? 'Upgrade' : 'Buy'}
                 </button>
               </div>
             </div>

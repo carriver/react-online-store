@@ -1,6 +1,6 @@
 import { countItems, refundForOne, type CartItemType } from '../cart';
 import { formatCoins, formatCoinsPerSecond } from '../catalog';
-import { COUPONS, STAMP_BONUS, cartValue, itemYieldPerSecond, stampsForCheckout, type CouponId } from '../game/economy';
+import { COUPONS, STAMP_BONUS, cartValue, itemYieldPerSecond, stampsForCheckout } from '../game/economy';
 import { useGame, useGameSelector } from '../game/GameProvider';
 import { nextItemCost } from '../game/state';
 import Sheet from './Sheet';
@@ -42,11 +42,7 @@ function CartLine({ item }: { item: CartItemType }) {
 }
 
 function Coupons({ onOpenPerks }: { onOpenPerks: () => void }) {
-  const coupons = useGameSelector((state) => state.coupons);
   const appliedCoupon = useGameSelector((state) => state.appliedCoupon);
-  const { dispatch, sfx } = useGame();
-  const ownedCoupons = [...new Set(coupons)];
-  const countOf = (coupon: CouponId) => coupons.filter((owned) => owned === coupon).length;
 
   return (
     <section className='cart-coupons' aria-label='Coupons'>
@@ -55,34 +51,15 @@ function Coupons({ onOpenPerks }: { onOpenPerks: () => void }) {
           <b>{COUPONS[appliedCoupon].name}</b> coupon active: every item you buy costs {COUPONS[appliedCoupon].percentOff}% less until you
           check out.
         </p>
-      ) : null}
-      {ownedCoupons.length > 0 ? (
-        <div className='cart-coupons__list' role='group' aria-label='Saved coupons'>
-          {ownedCoupons.map((coupon) => (
-            <button
-              key={coupon}
-              type='button'
-              className='coupon-chip'
-              disabled={appliedCoupon !== null}
-              onClick={() => {
-                sfx('buy');
-                dispatch({ type: 'applyCoupon', coupon });
-              }}>
-              Use {COUPONS[coupon].name}
-              {countOf(coupon) > 1 ? ` ×${countOf(coupon)}` : ''}
-            </button>
-          ))}
-        </div>
-      ) : null}
-      {!appliedCoupon && ownedCoupons.length === 0 ? (
+      ) : (
         <p className='cart-coupons__hint'>
-          No coupons yet.{' '}
+          No coupon yet.{' '}
           <button type='button' className='link-button' onClick={onOpenPerks}>
             Spend coins on one
           </button>{' '}
           to make items cheaper.
         </p>
-      ) : null}
+      )}
     </section>
   );
 }

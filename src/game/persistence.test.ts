@@ -11,7 +11,6 @@ describe('persistence', () => {
       cart: [{ id: 3, title: 'Jacket', price: 55.99, description: '', category: "men's clothing", image: 'https://example.com/j.png', amount: 2, paid: 130 }],
       discovered: [3],
       perks: { vibes: 2, thumb: 1, hopper: 0 },
-      coupons: ['coupon5' as const],
       appliedCoupon: 'coupon10' as const,
       ownedThemes: ['sunny' as const, 'matcha' as const],
       theme: 'matcha' as const,
@@ -37,6 +36,11 @@ describe('persistence', () => {
     expect(parseSave(legacy, 0).seenGuide).toBe(false);
   });
 
+  it('turns the best spare coupon from an older save into the active one', () => {
+    expect(parseSave(JSON.stringify({ coupons: ['coupon5', 'coupon20', 'coupon10'] }), 0).appliedCoupon).toBe('coupon20');
+    expect(parseSave(JSON.stringify({ coupons: ['coupon20'], appliedCoupon: 'coupon5' }), 0).appliedCoupon).toBe('coupon5');
+  });
+
   it('drops tampered values instead of trusting them', () => {
     const tampered = JSON.stringify({
       coins: -50,
@@ -54,7 +58,6 @@ describe('persistence', () => {
     expect(state.perks).toEqual({ vibes: 20, thumb: 0, hopper: 0 });
     expect(state.ownedThemes).toEqual(['sunny']);
     expect(state.theme).toBe('sunny');
-    expect(state.coupons).toEqual([]);
     expect(state.appliedCoupon).toBeNull();
     expect(state.lastTickAt).toBe(500);
   });
